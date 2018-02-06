@@ -1,5 +1,7 @@
 # Kronjob
 
+[![Build Status](https://travis-ci.org/better/kronjob.svg?branch=master)](https://travis-ci.org/better/kronjob)
+
 ## Use minimal templates to create sets of Kuberentes Jobs/CronJobs
 
 ```bash

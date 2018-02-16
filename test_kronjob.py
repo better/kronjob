@@ -56,17 +56,6 @@ def test_missing_schedule():
         kronjob.build_k8s_objects(abstract_jobs)
 
 
-def test_missing_jobs():
-    abstract_jobs = {
-        'image': 'example.com/base',
-        'namespace': 'test',
-        'schedule': '* * * * *',
-        'jobs': []
-    }
-    with pytest.raises(marshmallow.ValidationError):
-        kronjob.build_k8s_objects(abstract_jobs)
-
-
 def test_image():
     abstract_jobs = {
         'image': 'example.com/base',
@@ -120,3 +109,15 @@ def test_namespace_overrides_validation():
     }
     with pytest.raises(marshmallow.ValidationError):
         kronjob.build_k8s_objects(abstract_jobs)
+
+
+def test_top_level_job():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'namespace': 'test',
+        'schedule': 'once',
+        'name': 'once'
+    }
+    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
+    assert len(k8s_objects) == 1
+    assert isinstance(k8s_objects[0], k8s_models.V1Job)

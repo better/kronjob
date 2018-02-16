@@ -25,26 +25,34 @@ _DEFAULTS = {
 def _build_aggregate_jobs(abstract_jobs):
     base_job = copy.deepcopy(abstract_jobs)
     base_namespace = base_job.get('namespace')
+    jobs = base_job.pop('jobs', None)
+    namespaces = base_job.pop('namespaces', None)
     namespace_overrides = base_job.pop('namespace_overrides', {})
-    jobs = base_job.pop('jobs')
 
-    def _build_aggregate_job(job):
-        namespace = job.get('namespace', base_namespace)
-        namespace_override = namespace_overrides.get(namespace, {})
+    def _build_aggregate_job(job, namespace):
+        _job = job if job is not None else {}
+        _namespace = _job.get('namespace', namespace if namespace is not None else base_namespace)
+        _namespace_override = namespace_overrides.get(_namespace, {})
         aggregate_job = copy.deepcopy(base_job)
-        aggregate_job.update(namespace_override)
-        aggregate_job.update(job)
-        aggregate_job['name'] = '-'.join(filter(None, (base_job.get('name'), namespace_override.get('name'), job['name'])))
+        aggregate_job.update(_namespace_override)
+        aggregate_job.update(_job)
+        _name_parts = list(filter(None, (base_job.get('name'), _namespace_override.get('name'), _job.get('name'))))
+        if len(_name_parts) > 0:
+            aggregate_job['name'] = '-'.join(_name_parts)
         if 'env' in aggregate_job:
-            aggregate_job['env'] = base_job.get('env', []) + namespace_override.get('env', []) + job.get('env', [])
+            aggregate_job['env'] = base_job.get('env', []) + _namespace_override.get('env', []) + _job.get('env', [])
         return aggregate_job
 
-    return [_build_aggregate_job(job) for job in jobs]
+    if jobs is None and namespaces is None:
+        return [_build_aggregate_job(abstract_jobs, None)]
+
+    jobs = jobs if jobs is not None else [None]
+    namespaces = namespaces if namespaces is not None else [None]
+    return [_build_aggregate_job(job, namespace) for job in jobs for namespace in namespaces]
 
 
 class _AbstractJobsSchema(marshmallow.Schema):
-    _REQUIRED_FIELDS = ['image', 'namespace', 'schedule']
-    _JOB_REQUIRED_FIELDS = ['name']
+    _REQUIRED_FIELDS = ['name', 'image', 'namespace', 'schedule']
 
     args = marshmallow.fields.List(marshmallow.fields.String)
     concurrency_policy = marshmallow.fields.String(load_from='concurrencyPolicy')
@@ -68,13 +76,12 @@ class _AbstractJobsSchema(marshmallow.Schema):
     jobs = marshmallow.fields.Nested(
         '_AbstractJobsSchema',
         many=True,
-        exclude=('jobs', 'namespace_overrides'),
-        validate=marshmallow.validate.Length(min=1),
-        required=True
+        exclude=('jobs', 'namespaces', 'namespace_overrides')
     )
+    namespaces = marshmallow.fields.String(many=True)
     namespace_overrides = marshmallow.fields.Dict(
         keys=marshmallow.fields.String(),
-        values=marshmallow.fields.Nested('_AbstractJobsSchema', exclude=('jobs', 'namespace', 'namespace_overrides')),
+        values=marshmallow.fields.Nested('_AbstractJobsSchema', exclude=('jobs', 'namespace', 'namespaces', 'namespace_overrides')),
         load_from='namespaceOverrides'
     )
 
@@ -83,19 +90,11 @@ class _AbstractJobsSchema(marshmallow.Schema):
         if not (data == 'once' or crontab.CronSlices.is_valid(data)):
             raise marshmallow.ValidationError('schedule must be either once or a valid cron schedule')
 
-    @marshmallow.validates_schema
-    def validate_schema(self, data):
-        if 'jobs' not in data:
+    @marshmallow.validates_schema(pass_original=True)
+    def validate_schema(self, data, orig):
+        # only perform full schema validation on root node
+        if not (isinstance(orig, dict) and orig.get('__root')):
             return
-
-        job_required_keys = set(self._JOB_REQUIRED_FIELDS)
-        for job in data['jobs']:
-            if not job_required_keys.issubset(job):
-                raise marshmallow.ValidationError(
-                    'Embedded jobs must include all of the following fields: {}.'.format(
-                        ', '.join(self._JOB_REQUIRED_FIELDS)
-                    )
-                )
 
         required_keys = set(self._REQUIRED_FIELDS)
         for job in _build_aggregate_jobs(data):
@@ -178,6 +177,8 @@ def build_k8s_object(aggregate_job):
 
 
 def build_k8s_objects(abstract_jobs):
+    abstract_jobs = copy.deepcopy(abstract_jobs)
+    abstract_jobs['__root'] = True  # mark this as the root job
     abstract_jobs = _AbstractJobsSchema().load(abstract_jobs)
     aggregate_jobs = _build_aggregate_jobs(abstract_jobs)
     return [build_k8s_object(job) for job in aggregate_jobs]

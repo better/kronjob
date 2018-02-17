@@ -121,3 +121,29 @@ def test_top_level_job():
     k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
     assert len(k8s_objects) == 1
     assert isinstance(k8s_objects[0], k8s_models.V1Job)
+
+
+def test_namespaces():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'schedule': 'once',
+        'name': 'once',
+        'namespaces': ['testa', 'testb']
+    }
+    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
+    assert len(k8s_objects) == 2
+    assert sorted(k.metadata.namespace for k in k8s_objects) == ['testa', 'testb']
+
+
+def test_namespaces_and_jobs():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'schedule': 'once',
+        'namespaces': ['testa', 'testb'],
+        'jobs': [{'name': 'joba'}, {'name': 'jobb'}]
+    }
+    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
+    assert len(k8s_objects) == 4
+    actual = sorted((k.metadata.name, k.metadata.namespace) for k in k8s_objects)
+    expected = [('joba', 'testa'), ('joba', 'testb'), ('jobb', 'testa'), ('jobb', 'testb')]
+    assert actual == expected

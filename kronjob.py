@@ -36,8 +36,10 @@ def _build_aggregate_jobs(abstract_jobs):
         aggregate_job = copy.deepcopy(base_job)
         aggregate_job.update(_namespace_override)
         aggregate_job.update(_job)
-        _name_parts = list(filter(None, (base_job.get('name'), _namespace_override.get('name'), _job.get('name'))))
-        if len(_name_parts) > 0:
+        if _namespace is not None:
+            aggregate_job['namespace'] = _namespace
+        if 'name' in aggregate_job:
+            _name_parts = list(filter(None, (base_job.get('name'), _namespace_override.get('name'), _job.get('name'))))
             aggregate_job['name'] = '-'.join(_name_parts)
         if 'env' in aggregate_job:
             aggregate_job['env'] = base_job.get('env', []) + _namespace_override.get('env', []) + _job.get('env', [])
@@ -78,7 +80,7 @@ class _AbstractJobsSchema(marshmallow.Schema):
         many=True,
         exclude=('jobs', 'namespaces', 'namespace_overrides')
     )
-    namespaces = marshmallow.fields.String(many=True)
+    namespaces = marshmallow.fields.List(marshmallow.fields.String)
     namespace_overrides = marshmallow.fields.Dict(
         keys=marshmallow.fields.String(),
         values=marshmallow.fields.Nested('_AbstractJobsSchema', exclude=('jobs', 'namespace', 'namespaces', 'namespace_overrides')),

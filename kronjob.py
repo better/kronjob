@@ -84,7 +84,9 @@ class _AbstractJobsSchema(marshmallow.Schema):
     namespaces = marshmallow.fields.List(marshmallow.fields.String)
     namespace_overrides = marshmallow.fields.Dict(
         keys=marshmallow.fields.String(),
-        values=marshmallow.fields.Nested('_AbstractJobsSchema', exclude=('jobs', 'namespace', 'namespaces', 'namespace_overrides')),
+        values=marshmallow.fields.Nested(
+            '_AbstractJobsSchema', exclude=('jobs', 'namespace', 'namespaces', 'namespace_overrides')
+        ),
         load_from='namespaceOverrides'
     )
 
@@ -103,7 +105,8 @@ class _AbstractJobsSchema(marshmallow.Schema):
         for job in _build_aggregate_jobs(data):
             if not required_keys.issubset(job):
                 raise marshmallow.ValidationError(
-                    'Either the top level spec, namespace override, or embedded job must include all of the following fields: {}.'.format(
+                    'Either the top level spec, namespace override, or embedded job must include '
+                    'all of the following fields: {}.'.format(
                         ', '.join(self._REQUIRED_FIELDS)
                     )
                 )

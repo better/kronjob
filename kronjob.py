@@ -198,7 +198,9 @@ def main():
     parser = argparse.ArgumentParser(description='Generate Kubernetes Job/CronJob specs without the boilerplate.')
     parser.add_argument(
         'jobs_description',
+        nargs='?',
         type=argparse.FileType(),
+        default=sys.stdin,
         help='File containing an abstract definition of Kubernetes Job/CronJob specs.'
     )
     parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout)

@@ -60,6 +60,7 @@ class _AbstractJobsSchema(marshmallow.Schema):
     concurrency_policy = marshmallow.fields.String(load_from='concurrencyPolicy')
     env = marshmallow.fields.List(marshmallow.fields.Raw)
     command = marshmallow.fields.List(marshmallow.fields.String)
+    container_name = marshmallow.fields.String(load_from='containerName')
     failed_jobs_history_limit = marshmallow.fields.Int(
         load_from='failedJobsHistoryLimit', validate=marshmallow.validate.Range(min=1)
     )
@@ -146,7 +147,10 @@ def build_k8s_object(aggregate_job):
             metadata=k8s_models.V1ObjectMeta(labels=labels),
             spec=k8s_models.V1PodSpec(
                 containers=[
-                    k8s_models.V1Container(env=env, name='job', **_get_args('args', 'command', 'image'))
+                    k8s_models.V1Container(
+                        env=env, name=aggregate_job.get('containerName', 'job'),
+                        **_get_args('args', 'command', 'image')
+                    )
                 ],
                 **_get_args('node_selector', 'restart_policy')
             )

@@ -3,6 +3,7 @@ from __future__ import print_function
 import argparse
 import copy
 import json
+import pkg_resources
 import sys
 
 import crontab
@@ -201,7 +202,13 @@ def main():
         help='File containing an abstract definition of Kubernetes Job/CronJob specs.'
     )
     parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
+    parser.add_argument('--version', action='store_true')
     args = parser.parse_args()
+
+    if args.version:
+        dist = pkg_resources.get_distribution('kronjob')
+        print(dist)
+        return
 
     abstract_jobs = yaml.safe_load(args.jobs_description)
     k8s_objects = build_k8s_objects(abstract_jobs)

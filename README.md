@@ -23,7 +23,9 @@ positional arguments:
 
 optional arguments:
   -h, --help        show this help message and exit
+```
 
+```bash
 $ cat example_job.yml
 name: example
 image: 'example.com/base'
@@ -43,7 +45,9 @@ jobs:
           secretKeyRef:
             name: fake
             key: secret
+```
 
+```bash
 $ kronjob example_job.yml
 apiVersion: batch/v2alpha1
 kind: CronJob

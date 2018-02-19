@@ -7,7 +7,8 @@ setup(
     py_modules=['kronjob'],
     install_requires=[
         'kubernetes==4.0.0',
-        'marshmallow==3.0.0b7',
+        'inflection==0.3.1',
+        'jsonschema==2.6.0',
         'python-crontab==2.2.8',
         'PyYAML==3.12'
     ],
@@ -20,5 +21,8 @@ setup(
     keywords='kubernetes job cronjob schedule template',
     entry_points={
         'console_scripts': ['kronjob=kronjob:main']
+    },
+    package_data={
+        'kronjob': 'schema.json'
     }
 )

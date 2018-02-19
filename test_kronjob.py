@@ -1,7 +1,6 @@
 import kronjob
 
 from kubernetes.client import models as k8s_models
-import marshmallow
 import pytest
 
 
@@ -52,7 +51,7 @@ def test_missing_schedule():
             {'name': 'test'}
         ]
     }
-    with pytest.raises(marshmallow.ValidationError):
+    with pytest.raises(Exception):
         kronjob.build_k8s_objects(abstract_jobs)
 
 
@@ -107,7 +106,7 @@ def test_namespace_overrides_validation():
         'namespaceOverrides': {'test': {'schedule': 'invalid-schedule'}},
         'jobs': [{'name': 'once'}]
     }
-    with pytest.raises(marshmallow.ValidationError):
+    with pytest.raises(Exception):
         kronjob.build_k8s_objects(abstract_jobs)
 
 

@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$comment": "When a python implementation of v5 of the json schema draft is available: uses of`allOf` should be replaced with `merge`.",
+  "allOf": [
+    {
+      "$ref": "#/definitions/job"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "jobs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/job"
+          }
+        },
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "namespaceOverrides": {
+          "type": "object",
+          "patternProperties": {
+            "": {
+              "$ref": "#/definitions/job"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "job": {
+      "type": "object",
+      "properties": {
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "concurrencyPolicy": {
+          "type": "string"
+        },
+        "env": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "command": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "containerName": {
+          "type": "string"
+        },
+        "failedJobsHistoryLimit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "image": {
+          "type": "string"
+        },
+        "labelKey": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "nodeSelector": {
+          "type": "object"
+        },
+        "restartPolicy": {
+          "type": "string"
+        },
+        "schedule": {
+          "type": "string"
+        },
+        "successfulJobsHistoryLimit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "suspend": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

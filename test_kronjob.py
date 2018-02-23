@@ -1,7 +1,6 @@
 import kronjob
 
 from kubernetes.client import models as k8s_models
-import marshmallow
 import pytest
 
 
@@ -52,7 +51,7 @@ def test_missing_schedule():
             {'name': 'test'}
         ]
     }
-    with pytest.raises(marshmallow.ValidationError):
+    with pytest.raises(Exception):
         kronjob.build_k8s_objects(abstract_jobs)
 
 
@@ -107,7 +106,7 @@ def test_namespace_overrides_validation():
         'namespaceOverrides': {'test': {'schedule': 'invalid-schedule'}},
         'jobs': [{'name': 'once'}]
     }
-    with pytest.raises(marshmallow.ValidationError):
+    with pytest.raises(Exception):
         kronjob.build_k8s_objects(abstract_jobs)
 
 
@@ -148,3 +147,27 @@ def test_namespaces_and_jobs():
     actual = sorted((k.metadata.name, k.metadata.namespace) for k in k8s_objects)
     expected = [('joba', 'testa'), ('joba', 'testb'), ('jobb', 'testa'), ('jobb', 'testb')]
     assert actual == expected
+
+
+def test_default_concurrency_policy():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'schedule': '* * * * *',
+        'namespace': 'test',
+        'jobs': [{'name': 'test'}]
+    }
+    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
+    assert len(k8s_objects) == 1
+    assert k8s_objects[0].spec.concurrency_policy == 'Forbid'
+
+
+def test_failed_jobs_history_limit_validation():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'schedule': '* * * * *',
+        'namespace': 'test',
+        'failedJobsHistoryLimit': 0,
+        'jobs': [{'name': 'test'}]
+    }
+    with pytest.raises(Exception):
+        kronjob.build_k8s_objects(abstract_jobs)

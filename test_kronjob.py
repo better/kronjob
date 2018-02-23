@@ -147,3 +147,28 @@ def test_namespaces_and_jobs():
     actual = sorted((k.metadata.name, k.metadata.namespace) for k in k8s_objects)
     expected = [('joba', 'testa'), ('joba', 'testb'), ('jobb', 'testa'), ('jobb', 'testb')]
     assert actual == expected
+
+
+def test_default_concurrency_policy():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'schedule': '* * * * *',
+        'namespace': 'test',
+        'jobs': [{'name': 'test'}]
+    }
+    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
+    assert len(k8s_objects) == 1
+    print(k8s_objects[0].spec)
+    assert k8s_objects[0].spec.concurrency_policy == 'Forbid'
+
+
+def test_failed_jobs_history_limit_validation():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'schedule': '* * * * *',
+        'namespace': 'test',
+        'failedJobsHistoryLimit': 0,
+        'jobs': [{'name': 'test'}]
+    }
+    with pytest.raises(Exception):
+        kronjob.build_k8s_objects(abstract_jobs)

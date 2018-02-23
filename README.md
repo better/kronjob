@@ -10,6 +10,8 @@ pip install kronjob
 
 ## Use minimal templates to create sets of Kuberentes Jobs/CronJobs
 
+For a complete list of the available fields and commentary about their use see [schema.json](./schema.json).
+
 ```bash
 $ kronjob --help
 usage: kronjob [-h] jobs_description [outfile]

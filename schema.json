@@ -25,10 +25,8 @@
         "namespaceOverrides": {
           "type": "object",
           "comment": "An object mapping namespaces to a set of properties given a generated job belongs to the specified namespace.",
-          "patternProperties": {
-            "": {
-              "$ref": "#/definitions/job"
-            }
+          "additionalProperties": {
+            "$ref": "#/definitions/job"
           }
         }
       }

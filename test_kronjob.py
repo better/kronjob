@@ -158,7 +158,6 @@ def test_default_concurrency_policy():
     }
     k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
     assert len(k8s_objects) == 1
-    print(k8s_objects[0].spec)
     assert k8s_objects[0].spec.concurrency_policy == 'Forbid'
 
 

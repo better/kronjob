@@ -121,6 +121,7 @@ def test_top_level_job():
     k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
     assert len(k8s_objects) == 1
     assert isinstance(k8s_objects[0], k8s_models.V1Job)
+    assert k8s_objects[0].metadata.name == 'once'
 
 
 def test_namespaces():

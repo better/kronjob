@@ -48,7 +48,8 @@
         },
         "concurrencyPolicy": {
           "type": "string",
-          "comment": "`concurrencyPolicy` in generated cron job specs."
+          "comment": "`concurrencyPolicy` in generated cron job specs.",
+          "default": "Forbid"
         },
         "env": {
           "type": "array",
@@ -71,6 +72,7 @@
         "failedJobsHistoryLimit": {
           "type": "integer",
           "comment": "`failedJobsHistoryLimit` in generated cron job specs.",
+          "default": 10,
           "minimum": 1
         },
         "image": {
@@ -95,7 +97,8 @@
         },
         "restartPolicy": {
           "type": "string",
-          "comment": "`restartPolicy` in generated pod specs."
+          "comment": "`restartPolicy` in generated pod specs.",
+          "default": "Never"
         },
         "schedule": {
           "type": "string",
@@ -104,6 +107,7 @@
         "successfulJobsHistoryLimit": {
           "type": "integer",
           "comment": "`successfulJobsHistoryLimit` in generated cron job specs.",
+          "default": 1,
           "minimum": 1
         },
         "suspend": {

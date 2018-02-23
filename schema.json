@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "$comment": "Abstract definition of a collection of jobs/cron jobs. Each generated job/cron job must include the fields `'name`, `image`, `namespace`, and `schedule`. When a python implementation of >v4 of the json schema draft is available use of`allOf` should be replaced with `merge`.",
+  "$comment": "Abstract definition of a collection of Jobs/CronJobs. Each generated Job/CronJob must include the fields `'name`, `image`, `namespace`, and `schedule`. When a python implementation of >v4 of the json schema draft is available use of`allOf` should be replaced with `merge`.",
   "allOf": [
     {
       "$ref": "#/definitions/job"
@@ -10,7 +10,7 @@
       "properties": {
         "jobs": {
           "type": "array",
-          "comment": "An array of jobs that will inherit, and can override, properties from the top level job and namespaceOverrides.",
+          "comment": "An array of jobs that will inherit, and can override, properties from the top level and `namespaceOverrides`.",
           "items": {
             "$ref": "#/definitions/job"
           }
@@ -24,7 +24,7 @@
         },
         "namespaceOverrides": {
           "type": "object",
-          "comment": "An object mapping namespaces to a set of job properties which will override the top level job given a generated job belongs to the specified namespace.",
+          "comment": "An object mapping namespaces to a set of properties given a generated job belongs to the specified namespace.",
           "patternProperties": {
             "": {
               "$ref": "#/definitions/job"
@@ -53,7 +53,7 @@
         },
         "env": {
           "type": "array",
-          "comment": "`env` in generated container specs.",
+          "comment": "`env` in generated container specs. Values specified in the top level, `namespaceOverrides`, and `jobs` will be concatenated.",
           "items": {
             "type": "object"
           }
@@ -82,7 +82,7 @@
         },
         "labelKey": {
           "type": "string",
-          "comment": "Used as a key in `labels`, where the value is specified by `name`, within object metadata for generated pod template, job, and cron job specs."
+          "comment": "Used as a key in `labels`, where the value is specified by `name`, within object metadata for generated pod template, job, and cron job specs. Values specified in the top level, `namespaceOverrides`, and `jobs` will be concatenated separated by dashes."
         },
         "name": {
           "type": "string",

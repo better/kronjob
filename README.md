@@ -8,24 +8,31 @@
 pip install kronjob
 ```
 
-## Use minimal templates to create sets of Kuberentes Jobs/CronJobs
+## Use
 
 For a complete list of the available fields and commentary about their use see [schema.json](./schema.json).
 
 ```bash
 $ kronjob --help
-usage: kronjob [-h] jobs_description [outfile]
+usage: kronjob [-h] [--version] [abstract_job_spec] [k8s_job_spec]
 
 Generate Kubernetes Job/CronJob specs without the boilerplate.
 
 positional arguments:
-  jobs_description  File containing an abstract definition of Kubernetes
-                    Job/CronJob specs.
-  outfile
+  abstract_job_spec  File containing an abstract definition of Kubernetes
+                     Job/CronJob specs. Defaults to stdin.
+  k8s_job_spec       File kubernetes Job/CronJob specs will be written to.
+                     Defaults to stdout.
 
 optional arguments:
-  -h, --help        show this help message and exit
+  -h, --help         show this help message and exit
+  --version
 ```
+
+For a complete list of the available fields and commentary about their use see [schema.json](./schema.json).
+
+## Examples
+
 
 ```bash
 $ cat example_job.yml

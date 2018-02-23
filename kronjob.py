@@ -150,13 +150,19 @@ def build_k8s_objects(abstract_jobs):
 def main():
     parser = argparse.ArgumentParser(description='Generate Kubernetes Job/CronJob specs without the boilerplate.')
     parser.add_argument(
-        'jobs_description',
+        'abstract_job_spec',
         nargs='?',
         type=argparse.FileType(),
         default=sys.stdin,
-        help='File containing an abstract definition of Kubernetes Job/CronJob specs.'
+        help='File containing an abstract definition of Kubernetes Job/CronJob specs. Defaults to stdin.'
     )
-    parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
+    parser.add_argument(
+        'k8s_job_spec',
+        nargs='?',
+        type=argparse.FileType('w'),
+        default=sys.stdout,
+        help='File kubernetes Job/CronJob specs will be written to. Defaults to stdout.'
+    )
     parser.add_argument('--version', action='store_true')
     args = parser.parse_args()
 
@@ -165,9 +171,9 @@ def main():
         print(dist)
         return
 
-    abstract_jobs = yaml.safe_load(args.jobs_description)
+    abstract_jobs = yaml.safe_load(args.abstract_job_spec)
     k8s_objects = build_k8s_objects(abstract_jobs)
-    print(serialize_k8s(k8s_objects), file=args.outfile)
+    print(serialize_k8s(k8s_objects), file=args.k8s_job_spec)
 
 
 if __name__ == '__main__':

@@ -67,7 +67,8 @@
         },
         "containerName": {
           "type": "string",
-          "comment": "`name` in generated container specs."
+          "comment": "`name` in generated container specs.",
+          "default": "job"
         },
         "failedJobsHistoryLimit": {
           "type": "integer",

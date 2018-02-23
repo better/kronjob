@@ -18,6 +18,7 @@ import yaml
 _ALTERNATE_DEFAULTS = {
     # non standard k8s defaults
     'concurrencyPolicy': 'Forbid',
+    'containerName': 'job',
     'failedJobsHistoryLimit': 10,
     'restartPolicy': 'Never',
     'successfulJobsHistoryLimit': 1
@@ -104,7 +105,7 @@ def build_k8s_object(aggregate_job):
             spec=k8s_models.V1PodSpec(
                 containers=[
                     k8s_models.V1Container(
-                        env=env, name=aggregate_job.get('containerName', 'job'),
+                        env=env, name=_get_args('containerName')['container_name'],
                         **_get_args('args', 'command', 'image')
                     )
                 ],

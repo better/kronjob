@@ -1,6 +1,21 @@
+[![Build Status](https://travis-ci.org/better/kronjob.svg?branch=master)](https://travis-ci.org/better/kronjob) [![PyPI](https://img.shields.io/pypi/v/kronjob.svg)]()
+
+
 # Kronjob
 
-[![Build Status](https://travis-ci.org/better/kronjob.svg?branch=master)](https://travis-ci.org/better/kronjob)
+Generate Kubernetes Job/CronJob specs without the boilerplate.
+
+
+## Features
+
+* Expose an opinionated set of "the most useful" Job/CronJob properties as top level properties.
+* Write the same specs for your Jobs and CronJobs by specifying a `schedule` in Cron format or as the string 'once'.
+* Share identical specs across multiple `namespaces`.
+* Include a collection of embedded `jobs` that inherit the top level properties.
+* Override properties only in specified namespaces using `namespaceOverrides`.
+
+For a complete list of the available properties and commentary about their uses see [schema.json](./schema.json).
+
 
 ## Installation
 
@@ -8,9 +23,8 @@
 pip install kronjob
 ```
 
-## Use
 
-For a complete list of the available fields and commentary about their use see [schema.json](./schema.json).
+## Use
 
 ```bash
 $ kronjob --help
@@ -29,86 +43,263 @@ optional arguments:
   --version
 ```
 
-For a complete list of the available fields and commentary about their use see [schema.json](./schema.json).
 
 ## Examples
 
+### Single Job
 
-```bash
-$ cat example_job.yml
+Input:
+
+```yaml
+image: example.com/base
 name: example
-image: 'example.com/base'
-schedule: '* * * * *'
-env:
-  - name: ENV
-    value: MARS
 namespace: test
-jobs:
-  - name: first
-  - name: second
-  - name: only-once
-    schedule: once
-    env:
-      - name: SECRET
-        valueFrom:
-          secretKeyRef:
-            name: fake
-            key: secret
+schedule: 'once' # in order to output a Job and not a CronJob `schedule` must be 'once'
 ```
 
-```bash
-$ kronjob example_job.yml
+Output:
+
+```yaml
 apiVersion: batch/v2alpha1
 kind: CronJob
 metadata:
-  name: first
+  labels:
+    kronjob/job: example
+  name: example
   namespace: test
 spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 10
   jobTemplate:
     spec:
       template:
+        metadata:
+          labels:
+            kronjob/job: example-example
         spec:
           containers:
-          - env:
-            - name: ENV
-              value: MARS
-            image: example.com/base
+          - image: example.com/base
             name: job
+          restartPolicy: Never
   schedule: '* * * * *'
----
+  successfulJobsHistoryLimit: 1
+```
+
+### Single CronJob
+
+Input:
+
+```yaml
+image: example.com/base
+name: example
+namespace: test
+schedule: '* * * * *'
+```
+
+Output:
+
+```yaml
 apiVersion: batch/v2alpha1
 kind: CronJob
 metadata:
-  name: second
+  labels:
+    kronjob/job: example
+  name: example
   namespace: test
 spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 10
   jobTemplate:
     spec:
       template:
+        metadata:
+          labels:
+            kronjob/job: example
         spec:
           containers:
-          - env:
-            - name: ENV
-              value: MARS
-            image: example.com/base
+          - image: example.com/base
             name: job
+          restartPolicy: Never
   schedule: '* * * * *'
+  successfulJobsHistoryLimit: 1
+```
+
+### Job and CronJob sharing top level spec
+
+Input:
+
+```yaml
+image: example.com/base
+name: example
+namespace: test
+jobs:
+  - schedule: '* * * * *'
+  - schedule: once
+```
+
+Output:
+
+```yaml
+apiVersion: batch/v2alpha1
+kind: CronJob
+metadata:
+  labels:
+    kronjob/job: example
+  name: example
+  namespace: test
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 10
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            kronjob/job: example
+        spec:
+          containers:
+          - image: example.com/base
+            name: job
+          restartPolicy: Never
+  schedule: '* * * * *'
+  successfulJobsHistoryLimit: 1
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: only-once
+  labels:
+    kronjob/job: example
+  name: example
   namespace: test
 spec:
   template:
+    metadata:
+      labels:
+        kronjob/job: example
     spec:
       containers:
-      - env:
-        - name: SECRET
-          valueFrom:
-            secretKeyRef:
-              key: secret
-              name: fake
-        image: example.com/base
+      - image: example.com/base
         name: job
+      restartPolicy: Never
+```
+
+### Same Job in multiple namespaces
+
+Input:
+
+```yaml
+image: example.com/base
+name: example
+namespaces:
+  - prod
+  - staging
+schedule: once
+```
+
+Output:
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    kronjob/job: example
+  name: example
+  namespace: prod
+spec:
+  template:
+    metadata:
+      labels:
+        kronjob/job: example
+    spec:
+      containers:
+      - image: example.com/base
+        name: job
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    kronjob/job: example
+  name: example
+  namespace: staging
+spec:
+  template:
+    metadata:
+      labels:
+        kronjob/job: example
+    spec:
+      containers:
+      - image: example.com/base
+        name: job
+      restartPolicy: Never
+```
+
+### Using `namespaceOverrides` to enable spec only for certain namespaces
+
+Input:
+
+```yaml
+image: example.com/base
+name: example
+namespaceOverrides:
+  staging:
+    failedJobsHistoryLimit: 1
+namespaces:
+  - prod
+  - staging
+schedule: '* * * * *'
+```
+
+Output:
+
+```yaml
+apiVersion: batch/v2alpha1
+kind: CronJob
+metadata:
+  labels:
+    kronjob/job: example
+  name: example
+  namespace: prod
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 10
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            kronjob/job: example
+        spec:
+          containers:
+          - image: example.com/base
+            name: job
+          restartPolicy: Never
+  schedule: '* * * * *'
+  successfulJobsHistoryLimit: 1
+---
+apiVersion: batch/v2alpha1
+kind: CronJob
+metadata:
+  labels:
+    kronjob/job: example
+  name: example
+  namespace: staging
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            kronjob/job: example
+        spec:
+          containers:
+          - image: example.com/base
+            name: job
+          restartPolicy: Never
+  schedule: '* * * * *'
+  successfulJobsHistoryLimit: 1
 ```

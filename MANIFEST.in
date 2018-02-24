@@ -1,1 +1,1 @@
-include schema.json
+include kronjob/schema.json

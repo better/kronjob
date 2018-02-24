@@ -5,6 +5,7 @@ import copy
 import json
 import os
 import pkg_resources
+import pkgutil
 import sys
 
 import crontab
@@ -13,6 +14,9 @@ import jsonschema
 from kubernetes.client import models as k8s_models
 from kubernetes import client as k8s_client
 import yaml
+
+
+__all__ = ['build_k8s_objects', 'main', 'serialize_k8s']
 
 
 _ALTERNATE_DEFAULTS = {
@@ -25,7 +29,7 @@ _ALTERNATE_DEFAULTS = {
 }
 _K8S_API_CLIENT = k8s_client.ApiClient()
 _REQUIRED_FIELDS = ['name', 'image', 'namespace', 'schedule']
-_SCHEMA = json.load(open(os.path.join(os.path.dirname(__file__), 'schema.json'), 'rt'))
+_SCHEMA = json.loads(pkgutil.get_data('kronjob', 'schema.json').decode('utf-8'))
 
 
 class ValidationException(Exception):

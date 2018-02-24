@@ -8,8 +8,6 @@ build-assets:
 	rm -rf dist/
 	python3 -m venv --clear venv
 	venv/bin/python setup.py sdist
-	venv/bin/pip install wheel
-	venv/bin/python setup.py bdist_wheel --universal
 
 publish-assets:
 	make build-assets

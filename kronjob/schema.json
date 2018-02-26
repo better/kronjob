@@ -94,6 +94,10 @@
           "type": "object",
           "comment": "`nodeSelector` in generated pod specs."
         },
+        "resources": {
+          "type": "object",
+          "comment": "`resources` in generated container specs."
+        },
         "restartPolicy": {
           "type": "string",
           "comment": "`restartPolicy` in generated pod specs.",
@@ -112,6 +116,10 @@
         "suspend": {
           "type": "boolean",
           "comment": "`suspend` in generated cron job specs."
+        },
+        "volumes": {
+          "type": "array",
+          "comment": "`volumes` in generated pod specs."
         }
       }
     }

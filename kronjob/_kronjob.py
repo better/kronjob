@@ -110,10 +110,10 @@ def build_k8s_object(aggregate_job):
                 containers=[
                     k8s_models.V1Container(
                         env=env, name=_get_args('containerName')['container_name'],
-                        **_get_args('args', 'command', 'image')
+                        **_get_args('args', 'command', 'image', 'resources')
                     )
                 ],
-                **_get_args('nodeSelector', 'restartPolicy')
+                **_get_args('nodeSelector', 'restartPolicy', 'volumes')
             )
         )
     )

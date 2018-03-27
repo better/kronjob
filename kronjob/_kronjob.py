@@ -110,7 +110,11 @@ def build_k8s_object(aggregate_job):
                 containers=[
                     k8s_models.V1Container(
                         env=env, name=_get_args('containerName')['container_name'],
-                        **_get_args('args', 'command', 'image', 'resources')
+                        resources=k8s_models.V1ResourceRequirements(
+                            limits={'cpu': aggregate_job.get('cpuLimit'), 'memory': aggregate_job.get('memoryLimit')},
+                            requests={'cpu': aggregate_job.get('cpuRequest'), 'memory': aggregate_job.get('memoryRequest')}
+                        ),
+                        **_get_args('args', 'command', 'image')
                     )
                 ],
                 **_get_args('nodeSelector', 'restartPolicy', 'volumes')

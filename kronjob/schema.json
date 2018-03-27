@@ -68,6 +68,14 @@
           "comment": "`name` in generated container specs.",
           "default": "job"
         },
+        "cpuLimit": {
+          "type": "string",
+          "comment": "`resources.limits.cpu` in generated container specs."
+        },
+        "cpuRequest": {
+          "type": "string",
+          "comment": "`resources.requests.cpu` in generated container specs."
+        },
         "failedJobsHistoryLimit": {
           "type": "integer",
           "comment": "`failedJobsHistoryLimit` in generated cron job specs.",
@@ -82,6 +90,14 @@
           "type": "string",
           "comment": "Used as a key in `labels`, where the value is specified by `name`, within object metadata for generated pod template, job, and cron job specs. Values specified in the top level, `namespaceOverrides`, and `jobs` will be concatenated separated by dashes."
         },
+        "memoryLimit": {
+          "type": "string",
+          "comment": "`resources.limits.memory` in generated container specs."
+        },
+        "memoryRequest": {
+          "type": "string",
+          "comment": "`resources.requests.memory` in generated container specs."
+        },
         "name": {
           "type": "string",
           "comment": "`name` in metadata for generated job and cron job specs. Also used as a label value (see `labelKey`)."
@@ -93,10 +109,6 @@
         "nodeSelector": {
           "type": "object",
           "comment": "`nodeSelector` in generated pod specs."
-        },
-        "resources": {
-          "type": "object",
-          "comment": "`resources` in generated container specs."
         },
         "restartPolicy": {
           "type": "string",

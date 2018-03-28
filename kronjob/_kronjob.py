@@ -23,7 +23,11 @@ _ALTERNATE_DEFAULTS = {
     # non standard k8s defaults
     'concurrencyPolicy': 'Forbid',
     'containerName': 'job',
+    'cpuLimit': '1',
+    'cpuRequest': '1',
     'failedJobsHistoryLimit': 10,
+    'memoryLimit': '1Gi',
+    'memoryRequest': '1Gi',
     'restartPolicy': 'Never',
     'successfulJobsHistoryLimit': 1
 }
@@ -111,8 +115,8 @@ def build_k8s_object(aggregate_job):
                     k8s_models.V1Container(
                         env=env, name=_get_args('containerName')['container_name'],
                         resources=k8s_models.V1ResourceRequirements(
-                            limits={'cpu': aggregate_job.get('cpuLimit'), 'memory': aggregate_job.get('memoryLimit')},
-                            requests={'cpu': aggregate_job.get('cpuRequest'), 'memory': aggregate_job.get('memoryRequest')}
+                            limits={'cpu': _get_args('cpuLimit')['cpu_limit'], 'memory': _get_args('memoryLimit')['memory_limit']},
+                            requests={'cpu': _get_args('cpuRequest')['cpu_request'], 'memory': _get_args('memoryRequest')['memory_request']}
                         ),
                         **_get_args('args', 'command', 'image')
                     )

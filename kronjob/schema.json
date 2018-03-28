@@ -70,11 +70,13 @@
         },
         "cpuLimit": {
           "type": "string",
-          "comment": "`resources.limits.cpu` in generated container specs."
+          "comment": "`resources.limits.cpu` in generated container specs.",
+          "default": "1"
         },
         "cpuRequest": {
           "type": "string",
-          "comment": "`resources.requests.cpu` in generated container specs."
+          "comment": "`resources.requests.cpu` in generated container specs.",
+          "default": "1"
         },
         "failedJobsHistoryLimit": {
           "type": "integer",
@@ -92,11 +94,13 @@
         },
         "memoryLimit": {
           "type": "string",
-          "comment": "`resources.limits.memory` in generated container specs."
+          "comment": "`resources.limits.memory` in generated container specs.",
+          "default": "1Gi"
         },
         "memoryRequest": {
           "type": "string",
-          "comment": "`resources.requests.memory` in generated container specs."
+          "comment": "`resources.requests.memory` in generated container specs.",
+          "default": "1Gi"
         },
         "name": {
           "type": "string",

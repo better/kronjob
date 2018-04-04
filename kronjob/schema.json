@@ -88,6 +88,10 @@
           "type": "string",
           "comment": "`image` in generated container specs."
         },
+        "imagePullPolicy": {
+          "type": "string",
+          "comment": "`imagePullPolicy` in generated container specs."
+        },
         "labelKey": {
           "type": "string",
           "comment": "Used as a key in `labels`, where the value is specified by `name`, within object metadata for generated pod template, job, and cron job specs. Values specified in the top level, `namespaceOverrides`, and `jobs` will be concatenated separated by dashes."

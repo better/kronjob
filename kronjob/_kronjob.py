@@ -118,7 +118,7 @@ def build_k8s_object(aggregate_job):
                             limits={'cpu': _get_args('cpuLimit')['cpu_limit'], 'memory': _get_args('memoryLimit')['memory_limit']},
                             requests={'cpu': _get_args('cpuRequest')['cpu_request'], 'memory': _get_args('memoryRequest')['memory_request']}
                         ),
-                        **_get_args('args', 'command', 'image')
+                        **_get_args('args', 'command', 'image', 'imagePullPolicy')
                     )
                 ],
                 **_get_args('nodeSelector', 'restartPolicy', 'volumes')

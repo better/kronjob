@@ -67,11 +67,17 @@ def _build_aggregate_jobs(abstract_jobs):
     return [_build_aggregate_job(job, namespace) for job in jobs for namespace in namespaces]
 
 
+def _cron_is_valid(cron_schedule):
+    try:
+        crontab.CronTab(cron_schedule)
+        return True
+    except:
+        return False
 
 def _validate_aggregate_job(job):
     if not set(job).issuperset(_REQUIRED_FIELDS):
         raise ValidationException('each generated job must contain all of: {}'.format(_REQUIRED_FIELDS))
-    if not (job['schedule'] == 'once' or crontab.CronSlices.is_valid(job['schedule'])):
+    if not (job['schedule'] == 'once' or _cron_is_valid(job['schedule'])):
         raise ValidationException('schedule must be either "once" or a valid cron schedule')
 
 

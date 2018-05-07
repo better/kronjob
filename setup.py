@@ -2,13 +2,13 @@ from setuptools import setup
 
 setup(
     name='kronjob',
-    version='0.1.5',
+    version='0.1.6',
     description='Generate Kubernetes Job/CronJob specs without the boilerplate.',
     install_requires=[
         'kubernetes==4.0.0',
         'inflection==0.3.1',
         'jsonschema==2.6.0',
-        'python-crontab==2.2.8',
+        'crontab==0.22.1',
         'PyYAML==3.12'
     ],
     setup_requires=['pytest-runner'],

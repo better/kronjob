@@ -116,7 +116,8 @@
         },
         "nodeSelector": {
           "type": "object",
-          "comment": "`nodeSelector` in generated pod specs."
+          "comment": "`nodeSelector` in generated pod specs.",
+          "default": "jobs"
         },
         "restartPolicy": {
           "type": "string",

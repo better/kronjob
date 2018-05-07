@@ -29,7 +29,8 @@ _ALTERNATE_DEFAULTS = {
     'memoryLimit': '1Gi',
     'memoryRequest': '1Gi',
     'restartPolicy': 'Never',
-    'successfulJobsHistoryLimit': 1
+    'successfulJobsHistoryLimit': 1,
+    'nodeSelector': {'group': 'jobs'}
 }
 _K8S_API_CLIENT = k8s_client.ApiClient()
 _REQUIRED_FIELDS = ['name', 'image', 'namespace', 'schedule']

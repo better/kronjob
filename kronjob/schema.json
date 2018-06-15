@@ -37,6 +37,10 @@
       "type": "object",
       "comment": "Abstract definition of a single job/cron job",
       "properties": {
+        "annotations": {
+          "type": "object",
+          "comment": "`annotations` in metadata for generated pod tempalte specs"
+        },
         "args": {
           "type": "array",
           "comment": "`args` in generated container specs.",

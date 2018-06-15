@@ -116,7 +116,7 @@ def build_k8s_object(aggregate_job):
     env = _deserialize_k8s(aggregate_job.get('env'), 'list[V1EnvVar]')
     job_spec = k8s_models.V1JobSpec(
         template=k8s_models.V1PodTemplateSpec(
-            metadata=k8s_models.V1ObjectMeta(labels=labels),
+            metadata=k8s_models.V1ObjectMeta(labels=labels, **_get_args('annotations')),
             spec=k8s_models.V1PodSpec(
                 containers=[
                     k8s_models.V1Container(

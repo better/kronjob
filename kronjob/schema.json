@@ -39,7 +39,7 @@
       "properties": {
         "annotations": {
           "type": "object",
-          "comment": "`annotations` in metadata for generated pod tempalte specs"
+          "comment": "`annotations` in metadata for generated pod template specs"
         },
         "args": {
           "type": "array",

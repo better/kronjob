@@ -82,17 +82,23 @@ def build_k8s_object(aggregate_job, defaults=None):
     defaults = copy.deepcopy(defaults) if defaults is not None else {}
     if 'containerName' not in defaults:
         defaults['containerName'] = '{}-job'.format(aggregate_job['name'])
+    if 'labels' not in defaults:
+        defaults['labels'] = {}
+    if 'labelKey' not in defaults:
+        defaults['labelKey'] = 'kronjob/job'
+
+    def _get_arg(key):
+        return aggregate_job.get(key, defaults.get(key))
+
     def _get_args(*keys):
         return {
-            inflection.underscore(key): aggregate_job.get(key, defaults.get(key))
+            inflection.underscore(key): _get_arg(key)
             for key in keys
         }
 
-    labels = {aggregate_job.get('labelKey', 'kronjob/job'): aggregate_job['name']}
-    metadata = k8s_models.V1ObjectMeta(
-        labels=labels,
-        **_get_args('name', 'namespace')
-    )
+    labels = _get_arg('labels')
+    labels[_get_arg('labelKey')] = _get_arg('name')
+    metadata = k8s_models.V1ObjectMeta(labels=labels, **_get_args('name', 'namespace'))
     env = _deserialize_k8s(aggregate_job.get('env'), 'list[V1EnvVar]')
     job_spec = k8s_models.V1JobSpec(
         template=k8s_models.V1PodTemplateSpec(
@@ -100,10 +106,10 @@ def build_k8s_object(aggregate_job, defaults=None):
             spec=k8s_models.V1PodSpec(
                 containers=[
                     k8s_models.V1Container(
-                        env=env, name=_get_args('containerName')['container_name'],
+                        env=env, name=_get_arg('containerName'),
                         resources=k8s_models.V1ResourceRequirements(
-                            limits={'cpu': _get_args('cpuLimit')['cpu_limit'], 'memory': _get_args('memoryLimit')['memory_limit']},
-                            requests={'cpu': _get_args('cpuRequest')['cpu_request'], 'memory': _get_args('memoryRequest')['memory_request']}
+                            limits={'cpu': _get_arg('cpuLimit'), 'memory': _get_arg('memoryLimit')},
+                            requests={'cpu': _get_arg('cpuRequest'), 'memory': _get_arg('memoryRequest')}
                         ),
                         **_get_args('args', 'command', 'image', 'imagePullPolicy')
                     )
@@ -130,8 +136,7 @@ def build_k8s_object(aggregate_job, defaults=None):
                     spec=job_spec
                 ),
                 **_get_args(
-                    'concurrencyPolicy', 'failedJobsHistoryLimit', 'schedule',
-                    'successfulJobsHistoryLimit', 'suspend'
+                    'concurrencyPolicy', 'failedJobsHistoryLimit', 'schedule', 'successfulJobsHistoryLimit', 'suspend'
                 )
             )
         )

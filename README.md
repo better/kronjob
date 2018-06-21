@@ -12,7 +12,6 @@ Generate Kubernetes Job/CronJob specs without the boilerplate.
 * Write the same specs for your Jobs and CronJobs by specifying a `schedule` in Cron format or as the string 'once'.
 * Share identical specs across multiple `namespaces`.
 * Include a collection of embedded `jobs` that inherit the top level properties.
-* Override properties only in specified namespaces using `namespaceOverrides`.
 
 For a complete list of the available properties and commentary about their uses see [schema.json](./schema.json).
 
@@ -234,72 +233,4 @@ spec:
       - image: example.com/base
         name: job
       restartPolicy: Never
-```
-
-### Using `namespaceOverrides` to enable spec only for certain namespaces
-
-Input:
-
-```yaml
-image: example.com/base
-name: example
-namespaceOverrides:
-  staging:
-    failedJobsHistoryLimit: 1
-namespaces:
-  - prod
-  - staging
-schedule: '* * * * *'
-```
-
-Output:
-
-```yaml
-apiVersion: batch/v2alpha1
-kind: CronJob
-metadata:
-  labels:
-    kronjob/job: example
-  name: example
-  namespace: prod
-spec:
-  concurrencyPolicy: Forbid
-  failedJobsHistoryLimit: 10
-  jobTemplate:
-    spec:
-      template:
-        metadata:
-          labels:
-            kronjob/job: example
-        spec:
-          containers:
-          - image: example.com/base
-            name: job
-          restartPolicy: Never
-  schedule: '* * * * *'
-  successfulJobsHistoryLimit: 1
----
-apiVersion: batch/v2alpha1
-kind: CronJob
-metadata:
-  labels:
-    kronjob/job: example
-  name: example
-  namespace: staging
-spec:
-  concurrencyPolicy: Forbid
-  failedJobsHistoryLimit: 1
-  jobTemplate:
-    spec:
-      template:
-        metadata:
-          labels:
-            kronjob/job: example
-        spec:
-          containers:
-          - image: example.com/base
-            name: job
-          restartPolicy: Never
-  schedule: '* * * * *'
-  successfulJobsHistoryLimit: 1
 ```

@@ -85,31 +85,6 @@ def test_namespaced_names():
     assert k8s_objects[0].metadata.name == 'parent-child'
 
 
-def test_namespace_overrides():
-    abstract_jobs = {
-        'image': 'example.com/base',
-        'namespace': 'test',
-        'schedule': '* * * * *',
-        'namespaceOverrides': {'test': {'schedule': 'once'}},
-        'jobs': [{'name': 'once'}]
-    }
-    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
-    assert len(k8s_objects) == 1
-    assert isinstance(k8s_objects[0], k8s_models.V1Job)
-
-
-def test_namespace_overrides_validation():
-    abstract_jobs = {
-        'image': 'example.com/base',
-        'namespace': 'test',
-        'schedule': '* * * * *',
-        'namespaceOverrides': {'test': {'schedule': 'invalid-schedule'}},
-        'jobs': [{'name': 'once'}]
-    }
-    with pytest.raises(Exception):
-        kronjob.build_k8s_objects(abstract_jobs)
-
-
 def test_top_level_job():
     abstract_jobs = {
         'image': 'example.com/base',

@@ -10,7 +10,7 @@
       "properties": {
         "jobs": {
           "type": "array",
-          "comment": "An array of jobs that will inherit, and can override, properties from the top level and `namespaceOverrides`.",
+          "comment": "An array of jobs that will inherit, and can override, properties from the top level.",
           "items": {
             "$ref": "#/definitions/job"
           }
@@ -20,13 +20,6 @@
           "comment": "An array of namespaces for which to generate jobs. Each namespace here will result in the generation of a job that is identical in all aspects but namespace",
           "items": {
             "type": "string"
-          }
-        },
-        "namespaceOverrides": {
-          "type": "object",
-          "comment": "An object mapping namespaces to a set of properties given a generated job belongs to the specified namespace.",
-          "additionalProperties": {
-            "$ref": "#/definitions/job"
           }
         }
       }
@@ -55,7 +48,7 @@
         },
         "env": {
           "type": "array",
-          "comment": "`env` in generated container specs. Values specified in the top level, `namespaceOverrides`, and `jobs` will be concatenated.",
+          "comment": "`env` in generated container specs. Values specified in the top level, and `jobs` will be concatenated.",
           "items": {
             "type": "object"
           }
@@ -98,7 +91,7 @@
         },
         "labelKey": {
           "type": "string",
-          "comment": "Used as a key in `labels`, where the value is specified by `name`, within object metadata for generated pod template, job, and cron job specs. Values specified in the top level, `namespaceOverrides`, and `jobs` will be concatenated separated by dashes."
+          "comment": "Replaces the default label key of `kronjob/job` that is added to resource metadata"
         },
         "memoryLimit": {
           "type": "string",

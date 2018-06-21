@@ -46,22 +46,19 @@ def _build_aggregate_jobs(abstract_jobs):
     base_namespace = base_job.get('namespace')
     jobs = base_job.pop('jobs', [None])
     namespaces = base_job.pop('namespaces', [None])
-    namespace_overrides = base_job.pop('namespaceOverrides', {})
 
     def _build_aggregate_job(job, namespace):
         _job = job if job is not None else {}
         _namespace = _job.get('namespace', namespace if namespace is not None else base_namespace)
-        _namespace_override = namespace_overrides.get(_namespace, {})
         aggregate_job = copy.deepcopy(base_job)
-        aggregate_job.update(_namespace_override)
         aggregate_job.update(_job)
         if _namespace is not None:
             aggregate_job['namespace'] = _namespace
         if 'name' in aggregate_job:
-            _name_parts = list(filter(None, (base_job.get('name'), _namespace_override.get('name'), _job.get('name'))))
+            _name_parts = list(filter(None, (base_job.get('name'), _job.get('name'))))
             aggregate_job['name'] = '-'.join(_name_parts)
         if 'env' in aggregate_job:
-            aggregate_job['env'] = base_job.get('env', []) + _namespace_override.get('env', []) + _job.get('env', [])
+            aggregate_job['env'] = base_job.get('env', []) + _job.get('env', [])
         return aggregate_job
 
     return [_build_aggregate_job(job, namespace) for job in jobs for namespace in namespaces]

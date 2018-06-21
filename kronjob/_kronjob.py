@@ -136,6 +136,7 @@ def build_k8s_object(aggregate_job):
             metadata=metadata,
             spec=k8s_models.V2alpha1CronJobSpec(
                 job_template=k8s_models.V2alpha1JobTemplateSpec(
+                    metadata=k8s_models.V1ObjectMeta(labels=labels),
                     spec=job_spec
                 ),
                 **_get_args(

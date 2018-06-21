@@ -10,7 +10,6 @@ Generate Kubernetes Job/CronJob specs without the boilerplate.
 
 * Expose an opinionated set of "the most useful" Job/CronJob properties as top level properties.
 * Write the same specs for your Jobs and CronJobs by specifying a `schedule` in Cron format or as the string 'once'.
-* Share identical specs across multiple `namespaces`.
 * Include a collection of embedded `jobs` that inherit the top level properties.
 
 For a complete list of the available properties and commentary about their uses see [schema.json](./schema.json).
@@ -170,59 +169,6 @@ metadata:
     kronjob/job: example
   name: example
   namespace: test
-spec:
-  template:
-    metadata:
-      labels:
-        kronjob/job: example
-    spec:
-      containers:
-      - image: example.com/base
-        name: job
-      restartPolicy: Never
-```
-
-### Same Job in multiple namespaces
-
-Input:
-
-```yaml
-image: example.com/base
-name: example
-namespaces:
-  - prod
-  - staging
-schedule: once
-```
-
-Output:
-
-```yaml
-apiVersion: batch/v1
-kind: Job
-metadata:
-  labels:
-    kronjob/job: example
-  name: example
-  namespace: prod
-spec:
-  template:
-    metadata:
-      labels:
-        kronjob/job: example
-    spec:
-      containers:
-      - image: example.com/base
-        name: job
-      restartPolicy: Never
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  labels:
-    kronjob/job: example
-  name: example
-  namespace: staging
 spec:
   template:
     metadata:

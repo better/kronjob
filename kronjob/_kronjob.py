@@ -45,11 +45,10 @@ def _build_aggregate_jobs(abstract_jobs):
     base_job = copy.deepcopy(abstract_jobs)
     base_namespace = base_job.get('namespace')
     jobs = base_job.pop('jobs', [None])
-    namespaces = base_job.pop('namespaces', [None])
 
-    def _build_aggregate_job(job, namespace):
+    def _build_aggregate_job(job):
         _job = job if job is not None else {}
-        _namespace = _job.get('namespace', namespace if namespace is not None else base_namespace)
+        _namespace = _job.get('namespace', base_namespace)
         aggregate_job = copy.deepcopy(base_job)
         aggregate_job.update(_job)
         if _namespace is not None:
@@ -61,7 +60,7 @@ def _build_aggregate_jobs(abstract_jobs):
             aggregate_job['env'] = base_job.get('env', []) + _job.get('env', [])
         return aggregate_job
 
-    return [_build_aggregate_job(job, namespace) for job in jobs for namespace in namespaces]
+    return [_build_aggregate_job(job) for job in jobs]
 
 
 def _cron_is_valid(cron_schedule):

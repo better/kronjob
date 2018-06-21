@@ -14,13 +14,6 @@
           "items": {
             "$ref": "#/definitions/job"
           }
-        },
-        "namespaces": {
-          "type": "array",
-          "comment": "An array of namespaces for which to generate jobs. Each namespace here will result in the generation of a job that is identical in all aspects but namespace",
-          "items": {
-            "type": "string"
-          }
         }
       }
     }

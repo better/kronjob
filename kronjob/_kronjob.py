@@ -102,6 +102,7 @@ def serialize_k8s(k8s_object):
 
 
 def build_k8s_object(aggregate_job):
+    _ALTERNATE_DEFAULTS['containerName'] = '{}-job'.format(aggregate_job['name'])
     def _get_args(*keys):
         return {
             inflection.underscore(key): aggregate_job.get(key, _ALTERNATE_DEFAULTS.get(key))

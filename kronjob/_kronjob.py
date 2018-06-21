@@ -33,7 +33,7 @@ _ALTERNATE_DEFAULTS = {
     'nodeSelector': {'group': 'jobs'}
 }
 _K8S_API_CLIENT = k8s_client.ApiClient()
-_REQUIRED_FIELDS = ['name', 'image', 'namespace', 'schedule']
+_REQUIRED_FIELDS = ['name', 'image', 'schedule']
 _SCHEMA = json.loads(pkgutil.get_data('kronjob', 'schema.json').decode('utf-8'))
 
 
@@ -43,21 +43,14 @@ class ValidationException(Exception):
 
 def _build_aggregate_jobs(abstract_jobs):
     base_job = copy.deepcopy(abstract_jobs)
-    base_namespace = base_job.get('namespace')
-    jobs = base_job.pop('jobs', [None])
+    jobs = base_job.pop('jobs', [{}])
 
     def _build_aggregate_job(job):
-        _job = job if job is not None else {}
-        _namespace = _job.get('namespace', base_namespace)
         aggregate_job = copy.deepcopy(base_job)
-        aggregate_job.update(_job)
-        if _namespace is not None:
-            aggregate_job['namespace'] = _namespace
-        if 'name' in aggregate_job:
-            _name_parts = list(filter(None, (base_job.get('name'), _job.get('name'))))
-            aggregate_job['name'] = '-'.join(_name_parts)
+        aggregate_job.update(job)
+        aggregate_job['name'] = '-'.join(filter(None, (base_job.get('name'), job.get('name'))))
         if 'env' in aggregate_job:
-            aggregate_job['env'] = base_job.get('env', []) + _job.get('env', [])
+            aggregate_job['env'] = base_job.get('env', []) + job.get('env', [])
         return aggregate_job
 
     return [_build_aggregate_job(job) for job in jobs]

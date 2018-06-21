@@ -7,7 +7,6 @@ import pytest
 def test_single_cronjob():
     abstract_jobs = {
         'image': 'example.com/base',
-        'namespace': 'test',
         'schedule': '* * * * *',
         'jobs': [{'name': 'test'}]
     }
@@ -19,7 +18,6 @@ def test_single_cronjob():
 def test_single_job():
     abstract_jobs = {
         'image': 'example.com/base',
-        'namespace': 'test',
         'schedule': 'once',
         'jobs': [{'name': 'test'}]
     }
@@ -31,7 +29,6 @@ def test_single_job():
 def test_multiple():
     abstract_jobs = {
         'image': 'example.com/base',
-        'namespace': 'test',
         'jobs': [
             {'name': 'once', 'schedule': 'once'},
             {'name': 'recurring', 'schedule': '* * * * *'}
@@ -46,7 +43,6 @@ def test_multiple():
 def test_missing_schedule():
     abstract_jobs = {
         'image': 'example.com/base',
-        'namespace': 'test',
         'jobs': [
             {'name': 'test'}
         ]
@@ -58,7 +54,6 @@ def test_missing_schedule():
 def test_image():
     abstract_jobs = {
         'image': 'example.com/base',
-        'namespace': 'test',
         'jobs': [
             {'name': 'once', 'schedule': 'once'},
             {'name': 'recurring', 'schedule': '* * * * *', 'image': 'example.com/base:v2'}
@@ -74,7 +69,6 @@ def test_namespaced_names():
     abstract_jobs = {
         'image': 'example.com/base',
         'name': 'parent',
-        'namespace': 'test',
         'schedule': 'once',
         'jobs': [
             {'name': 'child'}
@@ -88,7 +82,6 @@ def test_namespaced_names():
 def test_top_level_job():
     abstract_jobs = {
         'image': 'example.com/base',
-        'namespace': 'test',
         'schedule': 'once',
         'name': 'once'
     }
@@ -102,7 +95,6 @@ def test_default_concurrency_policy():
     abstract_jobs = {
         'image': 'example.com/base',
         'schedule': '* * * * *',
-        'namespace': 'test',
         'jobs': [{'name': 'test'}]
     }
     k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
@@ -114,7 +106,6 @@ def test_failed_jobs_history_limit_validation():
     abstract_jobs = {
         'image': 'example.com/base',
         'schedule': '* * * * *',
-        'namespace': 'test',
         'failedJobsHistoryLimit': 0,
         'jobs': [{'name': 'test'}]
     }

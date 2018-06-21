@@ -91,17 +91,6 @@ def test_top_level_job():
     assert k8s_objects[0].metadata.name == 'once'
 
 
-def test_default_concurrency_policy():
-    abstract_jobs = {
-        'image': 'example.com/base',
-        'schedule': '* * * * *',
-        'jobs': [{'name': 'test'}]
-    }
-    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
-    assert len(k8s_objects) == 1
-    assert k8s_objects[0].spec.concurrency_policy == 'Forbid'
-
-
 def test_failed_jobs_history_limit_validation():
     abstract_jobs = {
         'image': 'example.com/base',

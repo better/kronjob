@@ -19,6 +19,7 @@ __all__ = ['build_k8s_objects', 'main', 'serialize_k8s']
 
 
 _K8S_API_CLIENT = k8s_client.ApiClient()
+_K8S_API_VERSION = '1.7'
 _REQUIRED_FIELDS = ['name', 'image', 'schedule']
 _SCHEMA = json.loads(pkgutil.get_data('kronjob', 'schema.json').decode('utf-8'))
 
@@ -77,7 +78,22 @@ def serialize_k8s(k8s_object):
     )
 
 
-def build_k8s_object(aggregate_job, defaults=None):
+def build_k8s_object(aggregate_job, k8s_api_version=_K8S_API_VERSION, defaults=None):
+    version_parts = str(k8s_api_version).split('.')
+    k8s_major, k8s_minor = int(version_parts[0]), int(version_parts[1])
+    if k8s_major != 1 or k8s_minor < 5:
+        raise ValueError('Unsupported kubernetes api version')
+    if k8s_minor >= 8:
+        cronjob_api_version = 'v1beta1'
+        CronJob = k8s_models.V1beta1CronJob
+        CronJobSpec = k8s_models.V1beta1CronJobSpec
+        JobTemplateSpec = k8s_models.V1beta1JobTemplateSpec
+    else:
+        cronjob_api_version = 'v2alpha1'
+        CronJob = k8s_models.V2alpha1CronJob
+        CronJobSpec = k8s_models.V2alpha1CronJobSpec
+        JobTemplateSpec = k8s_models.V2alpha1JobTemplateSpec
+
     defaults = copy.deepcopy(defaults) if defaults is not None else {}
     if 'containerName' not in defaults:
         defaults['containerName'] = '{}-job'.format(aggregate_job['name'])
@@ -125,12 +141,12 @@ def build_k8s_object(aggregate_job, defaults=None):
             spec=job_spec
         )
     else:
-        k8s_object = k8s_models.V2alpha1CronJob(
-            api_version='batch/v2alpha1',
+        k8s_object = CronJob(
+            api_version=cronjob_api_version,
             kind='CronJob',
             metadata=metadata,
-            spec=k8s_models.V2alpha1CronJobSpec(
-                job_template=k8s_models.V2alpha1JobTemplateSpec(
+            spec=CronJobSpec(
+                job_template=JobTemplateSpec(
                     metadata=k8s_models.V1ObjectMeta(labels=labels),
                     spec=job_spec
                 ),
@@ -143,12 +159,12 @@ def build_k8s_object(aggregate_job, defaults=None):
     return k8s_object
 
 
-def build_k8s_objects(abstract_jobs, defaults=None):
+def build_k8s_objects(abstract_jobs, k8s_api_version=_K8S_API_VERSION, defaults=None):
     jsonschema.validate(abstract_jobs, _SCHEMA)
     aggregate_jobs = _build_aggregate_jobs(abstract_jobs)
     for aggregate_job in aggregate_jobs:
         _validate_aggregate_job(aggregate_job)
-    return [build_k8s_object(job, defaults=defaults) for job in aggregate_jobs]
+    return [build_k8s_object(job, k8s_api_version=k8s_api_version, defaults=defaults) for job in aggregate_jobs]
 
 
 def main():
@@ -172,6 +188,7 @@ def main():
         type=argparse.FileType('r'),
         help='File containing default properties which will be applied to any generated Job/CronJob specs that do specify them.'
     )
+    parser.add_argument('--k8s-api-version', default=_K8S_API_VERSION)
     parser.add_argument('--version', action='store_true')
     args = parser.parse_args()
 
@@ -182,7 +199,7 @@ def main():
 
     abstract_jobs = yaml.safe_load(args.abstract_job_spec)
     defaults = yaml.safe_load(args.defaults_file) if args.defaults_file is not None else None
-    k8s_objects = build_k8s_objects(abstract_jobs, defaults=defaults)
+    k8s_objects = build_k8s_objects(abstract_jobs, k8s_api_version=args.k8s_api_version, defaults=defaults)
     print(serialize_k8s(k8s_objects), file=args.k8s_job_spec)
 
 

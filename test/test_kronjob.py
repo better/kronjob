@@ -2,12 +2,12 @@ import kronjob
 
 from kubernetes.client import models as k8s_models
 import pytest
+import yaml
 
 
 def test_single_cronjob():
     abstract_jobs = {
         'image': 'example.com/base',
-        'namespace': 'test',
         'schedule': '* * * * *',
         'jobs': [{'name': 'test'}]
     }
@@ -19,7 +19,6 @@ def test_single_cronjob():
 def test_single_job():
     abstract_jobs = {
         'image': 'example.com/base',
-        'namespace': 'test',
         'schedule': 'once',
         'jobs': [{'name': 'test'}]
     }
@@ -28,10 +27,21 @@ def test_single_job():
     assert isinstance(k8s_objects[0], k8s_models.V1Job)
 
 
+def test_top_level_job():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'schedule': 'once',
+        'name': 'once'
+    }
+    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
+    assert len(k8s_objects) == 1
+    assert isinstance(k8s_objects[0], k8s_models.V1Job)
+    assert k8s_objects[0].metadata.name == 'once'
+
+
 def test_multiple():
     abstract_jobs = {
         'image': 'example.com/base',
-        'namespace': 'test',
         'jobs': [
             {'name': 'once', 'schedule': 'once'},
             {'name': 'recurring', 'schedule': '* * * * *'}
@@ -46,19 +56,15 @@ def test_multiple():
 def test_missing_schedule():
     abstract_jobs = {
         'image': 'example.com/base',
-        'namespace': 'test',
-        'jobs': [
-            {'name': 'test'}
-        ]
+        'jobs': [{'name': 'test'}]
     }
     with pytest.raises(Exception):
         kronjob.build_k8s_objects(abstract_jobs)
 
 
-def test_image():
+def test_property_overrides():
     abstract_jobs = {
         'image': 'example.com/base',
-        'namespace': 'test',
         'jobs': [
             {'name': 'once', 'schedule': 'once'},
             {'name': 'recurring', 'schedule': '* * * * *', 'image': 'example.com/base:v2'}
@@ -70,104 +76,86 @@ def test_image():
     assert k8s_objects[1].spec.job_template.spec.template.spec.containers[0].image == 'example.com/base:v2'
 
 
-def test_namespaced_names():
+def test_name_concatenation():
     abstract_jobs = {
         'image': 'example.com/base',
         'name': 'parent',
-        'namespace': 'test',
         'schedule': 'once',
-        'jobs': [
-            {'name': 'child'}
-        ]
+        'jobs': [{'name': 'child'}]
     }
     k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
     assert len(k8s_objects) == 1
     assert k8s_objects[0].metadata.name == 'parent-child'
 
 
-def test_namespace_overrides():
-    abstract_jobs = {
-        'image': 'example.com/base',
-        'namespace': 'test',
-        'schedule': '* * * * *',
-        'namespaceOverrides': {'test': {'schedule': 'once'}},
-        'jobs': [{'name': 'once'}]
-    }
-    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
-    assert len(k8s_objects) == 1
-    assert isinstance(k8s_objects[0], k8s_models.V1Job)
-
-
-def test_namespace_overrides_validation():
-    abstract_jobs = {
-        'image': 'example.com/base',
-        'namespace': 'test',
-        'schedule': '* * * * *',
-        'namespaceOverrides': {'test': {'schedule': 'invalid-schedule'}},
-        'jobs': [{'name': 'once'}]
-    }
-    with pytest.raises(Exception):
-        kronjob.build_k8s_objects(abstract_jobs)
-
-
-def test_top_level_job():
-    abstract_jobs = {
-        'image': 'example.com/base',
-        'namespace': 'test',
-        'schedule': 'once',
-        'name': 'once'
-    }
-    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
-    assert len(k8s_objects) == 1
-    assert isinstance(k8s_objects[0], k8s_models.V1Job)
-    assert k8s_objects[0].metadata.name == 'once'
-
-
-def test_namespaces():
-    abstract_jobs = {
-        'image': 'example.com/base',
-        'schedule': 'once',
-        'name': 'once',
-        'namespaces': ['testa', 'testb']
-    }
-    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
-    assert len(k8s_objects) == 2
-    assert sorted(k.metadata.namespace for k in k8s_objects) == ['testa', 'testb']
-
-
-def test_namespaces_and_jobs():
-    abstract_jobs = {
-        'image': 'example.com/base',
-        'schedule': 'once',
-        'namespaces': ['testa', 'testb'],
-        'jobs': [{'name': 'joba'}, {'name': 'jobb'}]
-    }
-    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
-    assert len(k8s_objects) == 4
-    actual = sorted((k.metadata.name, k.metadata.namespace) for k in k8s_objects)
-    expected = [('joba', 'testa'), ('joba', 'testb'), ('jobb', 'testa'), ('jobb', 'testb')]
-    assert actual == expected
-
-
-def test_default_concurrency_policy():
+def test_json_schema_property_validation():
     abstract_jobs = {
         'image': 'example.com/base',
         'schedule': '* * * * *',
-        'namespace': 'test',
-        'jobs': [{'name': 'test'}]
-    }
-    k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
-    assert len(k8s_objects) == 1
-    assert k8s_objects[0].spec.concurrency_policy == 'Forbid'
-
-
-def test_failed_jobs_history_limit_validation():
-    abstract_jobs = {
-        'image': 'example.com/base',
-        'schedule': '* * * * *',
-        'namespace': 'test',
         'failedJobsHistoryLimit': 0,
         'jobs': [{'name': 'test'}]
     }
     with pytest.raises(Exception):
         kronjob.build_k8s_objects(abstract_jobs)
+
+
+
+def test_labels():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'schedule': 'once',
+        'name': 'test',
+        'labelKey': 'testKey',
+        'labels': {'another': 'label'}
+    }
+    job = kronjob.build_k8s_objects(abstract_jobs)[0]
+    assert job.metadata.labels == {'another': 'label', 'testKey': 'test'}
+
+
+def test_job_properties():
+    abstract_jobs = {
+        'schedule': 'once',
+        'name': 'once'
+    }
+    properties = (
+        ('annotations', '["spec"]["template"]["metadata"]["annotations"]', {'test': 'annotation'}),
+        ('args', '["spec"]["template"]["spec"]["containers"][0]["args"]', ['some', 'test', 'args']),
+        ('command', '["spec"]["template"]["spec"]["containers"][0]["command"]', ['a', 'test', 'command']),
+        ('containerName', '["spec"]["template"]["spec"]["containers"][0]["name"]', 'name'),
+        ('cpuLimit', '["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"]["cpu"]', '100m'),
+        ('cpuRequest', '["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"]["cpu"]', '100m'),
+        ('image', '["spec"]["template"]["spec"]["containers"][0]["image"]', 'example.com/base'),
+        ('imagePullPolicy', '["spec"]["template"]["spec"]["containers"][0]["imagePullPolicy"]', 'Always'),
+        ('memoryLimit', '["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"]["memory"]', '100m'),
+        ('memoryRequest', '["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"]["memory"]', '100m'),
+        ('namespace', '["metadata"]["namespace"]', 'default'),
+        ('nodeSelector', '["spec"]["template"]["spec"]["nodeSelector"]', {'group': 'jobs'}),
+        ('restartPolicy', '["spec"]["template"]["spec"]["restartPolicy"]', 'Never'),
+        ('volumes', '["spec"]["template"]["spec"]["volumes"]', [{'name': 'test', 'emptyDir': {}}]),
+    )
+    for input_path, _, value in properties:
+        abstract_jobs[input_path] = value
+    k8s_job = kronjob.build_k8s_objects(abstract_jobs)
+    serialized_job = list(yaml.safe_load_all(kronjob.serialize_k8s(k8s_job)))[0]
+    for _, output_path, value in properties:
+        assert eval('serialized_job{}'.format(output_path)) == value
+
+
+def test_cronjob_properties():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'name': 'test'
+    }
+    properties = (
+        ('concurrencyPolicy', '["spec"]["concurrencyPolicy"]', 'Forbid'),
+        ('failedJobsHistoryLimit', '["spec"]["failedJobsHistoryLimit"]', 3),
+        ('schedule', '["spec"]["schedule"]', '* * * * *'),
+        ('successfulJobsHistoryLimit', '["spec"]["successfulJobsHistoryLimit"]', 1),
+        ('suspend', '["spec"]["suspend"]', True),
+    )
+    for input_path, _, value in properties:
+        abstract_jobs[input_path] = value
+    k8s_job = kronjob.build_k8s_objects(abstract_jobs)
+    serialized_job = list(yaml.safe_load_all(kronjob.serialize_k8s(k8s_job)))[0]
+    for _, output_path, value in properties:
+        assert eval('serialized_job{}'.format(output_path)) == value

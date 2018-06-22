@@ -56,6 +56,8 @@ def _validate_aggregate_job(job):
         raise ValidationException('each generated job must contain all of: {}'.format(_REQUIRED_FIELDS))
     if not (job['schedule'] == 'once' or _cron_is_valid(job['schedule'])):
         raise ValidationException('schedule must be either "once" or a valid cron schedule')
+    if len(job['name']) > 52:
+        raise ValidationException('name must be less than 52 chars')
 
 
 def _deserialize_k8s(data, type):

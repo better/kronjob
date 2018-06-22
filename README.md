@@ -14,7 +14,7 @@ Generate Kubernetes Job/CronJob specs without the boilerplate.
 * Include a collection of embedded `jobs` that inherit the top level properties.
 * Override properties only in specified namespaces using `namespaceOverrides`.
 
-For a complete list of the available properties and commentary about their uses see [schema.json](./schema.json).
+For a complete list of the available properties and commentary about their uses see [schema.json](./kronjob/schema.json).
 
 
 ## Installation

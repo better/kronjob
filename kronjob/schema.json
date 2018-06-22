@@ -1,129 +1,131 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "$comment": "Abstract definition of a collection of Jobs/CronJobs. Each generated Job/CronJob must include the fields `'name`, `image`, `namespace`, and `schedule`. When a python implementation of >v4 of the json schema draft is available use of`allOf` should be replaced with `merge`.",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$comment": "Abstract definition of a collection of Jobs/CronJobs. Each generated Job/CronJob must include the fields `'name`, `image`, and `schedule`. When draft-08 of json schema is released we should be able to validate that unused properties are disallowed without the propertyNames gymnastics.",
+  "type": "object",
   "allOf": [
-    {
-      "$ref": "#/definitions/job"
-    },
-    {
+    {"$ref": "#/definitions/job"},
+    {"$ref": "#/definitions/parentJob"}
+  ],
+  "anyOf": [
+    {"$ref": "#/definitions/jobNames"},
+    {"$ref": "#/definitions/parentJobNames"}
+  ],
+  "definitions": {
+    "parentJob": {
       "type": "object",
       "properties": {
         "jobs": {
+          "$comment": "An array of jobs that will inherit, and can override, properties from the top level.",
           "type": "array",
-          "comment": "An array of jobs that will inherit, and can override, properties from the top level.",
-          "items": {
-            "$ref": "#/definitions/job"
-          }
+          "items": {"$ref": "#/definitions/job"}
         }
       }
-    }
-  ],
-  "definitions": {
+    },
+    "parentJobNames": {
+      "propertyNames": {"enum": ["jobs"]}
+    },
     "job": {
+      "$comment": "Abstract definition of a single job/cron job",
       "type": "object",
-      "comment": "Abstract definition of a single job/cron job",
       "properties": {
         "annotations": {
-          "type": "object",
-          "comment": "`annotations` in metadata for generated pod template specs"
+          "$comment": "`annotations` in metadata for generated pod template specs",
+          "type": "object"
         },
         "args": {
+          "$comment": "`args` in generated container specs.",
           "type": "array",
-          "comment": "`args` in generated container specs.",
-          "items": {
-            "type": "string"
-          }
+          "items": {"type": "string"}
         },
         "concurrencyPolicy": {
-          "type": "string",
-          "comment": "`concurrencyPolicy` in generated cron job specs."
+          "$comment": "`concurrencyPolicy` in generated cron job specs.",
+          "type": "string"
         },
         "env": {
+          "$comment": "`env` in generated container specs. Values specified in the top level, and `jobs` will be concatenated.",
           "type": "array",
-          "comment": "`env` in generated container specs. Values specified in the top level, and `jobs` will be concatenated.",
-          "items": {
-            "type": "object"
-          }
+          "items": {"type": "object"}
         },
         "command": {
+          "$comment": "`command` in generated container specs.",
           "type": "array",
-          "comment": "`command` in generated container specs.",
-          "items": {
-            "type": "string"
-          }
+          "items": {"type": "string"}
         },
         "containerName": {
+          "$comment": "`name` in generated container specs.",
           "type": "string",
-          "comment": "`name` in generated container specs.",
           "default": "job"
         },
         "cpuLimit": {
-          "type": "string",
-          "comment": "`resources.limits.cpu` in generated container specs."
+          "$comment": "`resources.limits.cpu` in generated container specs.",
+          "type": "string"
         },
         "cpuRequest": {
-          "type": "string",
-          "comment": "`resources.requests.cpu` in generated container specs."
+          "$comment": "`resources.requests.cpu` in generated container specs.",
+          "type": "string"
         },
         "failedJobsHistoryLimit": {
+          "$comment": "`failedJobsHistoryLimit` in generated cron job specs.",
           "type": "integer",
-          "comment": "`failedJobsHistoryLimit` in generated cron job specs.",
           "minimum": 1
         },
         "image": {
-          "type": "string",
-          "comment": "`image` in generated container specs."
+          "$comment": "`image` in generated container specs.",
+          "type": "string"
         },
         "imagePullPolicy": {
-          "type": "string",
-          "comment": "`imagePullPolicy` in generated container specs."
+          "$comment": "`imagePullPolicy` in generated container specs.",
+          "type": "string"
         },
         "labelKey": {
-          "type": "string",
-          "comment": "Replaces the default label key of `kronjob/job` that is added to resource metadata"
+          "$comment": "Replaces the default label key of `kronjob/job` that is added to resource metadata",
+          "type": "string"
         },
         "memoryLimit": {
-          "type": "string",
-          "comment": "`resources.limits.memory` in generated container specs."
+          "$comment": "`resources.limits.memory` in generated container specs.",
+          "type": "string"
         },
         "memoryRequest": {
-          "type": "string",
-          "comment": "`resources.requests.memory` in generated container specs."
+          "$comment": "`resources.requests.memory` in generated container specs.",
+          "type": "string"
         },
         "name": {
-          "type": "string",
-          "comment": "`name` in metadata for generated job and cron job specs. Also used as a label value (see `labelKey`)."
+          "$comment": "`name` in metadata for generated job and cron job specs. Also used as a label value (see `labelKey`).",
+          "type": "string"
         },
         "namespace": {
-          "type": "string",
-          "comment": "`namespace` in metadata for generated job and cron job specs."
+          "$comment": "`namespace` in metadata for generated job and cron job specs.",
+          "type": "string"
         },
         "nodeSelector": {
-          "type": "object",
-          "comment": "`nodeSelector` in generated pod specs."   
+          "$comment": "`nodeSelector` in generated pod specs.",
+          "type": "object"
         },
         "restartPolicy": {
-          "type": "string",
-          "comment": "`restartPolicy` in generated pod specs."
+          "$comment": "`restartPolicy` in generated pod specs.",
+          "type": "string"
         },
         "schedule": {
-          "type": "string",
-          "comment": "Dictates that this should be a cron job if a valid Cron format is given - `schedule` in the generated cron job specs. Dictates that this should be a job if the string \"once\" is given."
+          "$comment": "Dictates that this should be a cron job if a valid Cron format is given - `schedule` in the generated cron job specs. Dictates that this should be a job if the string \"once\" is given.",
+          "type": "string"
         },
         "successfulJobsHistoryLimit": {
+          "$comment": "`successfulJobsHistoryLimit` in generated cron job specs.",
           "type": "integer",
-          "comment": "`successfulJobsHistoryLimit` in generated cron job specs.",
           "minimum": 1
         },
         "suspend": {
-          "type": "boolean",
-          "comment": "`suspend` in generated cron job specs."
+          "$comment": "`suspend` in generated cron job specs.",
+          "type": "boolean"
         },
         "volumes": {
-          "type": "array",
-          "comment": "`volumes` in generated pod specs."
+          "$comment": "`volumes` in generated pod specs.",
+          "type": "array"
         }
       }
+    },
+    "jobNames": {
+      "propertyNames": {"enum": ["annotations", "args", "concurrencyPolicy", "env", "command", "containerName", "cpuLimit", "cpuRequest", "failedJobsHistoryLimit", "image", "imagePullPolicy", "labelKey", "memoryLimit", "memoryRequest", "name", "namespace", "nodeSelector", "restartPolicy", "schedule", "successfulJobsHistoryLimit", "suspend", "volumes"]}
     }
   }
 }

@@ -124,8 +124,16 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
                     k8s_models.V1Container(
                         env=env, name=_get_arg('containerName'),
                         resources=k8s_models.V1ResourceRequirements(
-                            limits={'cpu': _get_arg('cpuLimit'), 'memory': _get_arg('memoryLimit')},
-                            requests={'cpu': _get_arg('cpuRequest'), 'memory': _get_arg('memoryRequest')}
+                            limits={
+                                k: v for k, v in (
+                                    ('cpu', _get_arg('cpuLimit')), ('memory', _get_arg('memoryLimit'))
+                                ) if v is not None
+                            } or None,
+                            requests={
+                                k: v for k, v in (
+                                    ('cpu', _get_arg('cpuRequest')), ('memory', _get_arg('memoryRequest'))
+                                ) if v is not None
+                            } or None,
                         ),
                         **_get_args('args', 'command', 'image', 'imagePullPolicy')
                     )

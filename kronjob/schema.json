@@ -36,8 +36,7 @@
         },
         "concurrencyPolicy": {
           "type": "string",
-          "comment": "`concurrencyPolicy` in generated cron job specs.",
-          "default": "Forbid"
+          "comment": "`concurrencyPolicy` in generated cron job specs."
         },
         "env": {
           "type": "array",
@@ -60,18 +59,15 @@
         },
         "cpuLimit": {
           "type": "string",
-          "comment": "`resources.limits.cpu` in generated container specs.",
-          "default": "1"
+          "comment": "`resources.limits.cpu` in generated container specs."
         },
         "cpuRequest": {
           "type": "string",
-          "comment": "`resources.requests.cpu` in generated container specs.",
-          "default": "1"
+          "comment": "`resources.requests.cpu` in generated container specs."
         },
         "failedJobsHistoryLimit": {
           "type": "integer",
           "comment": "`failedJobsHistoryLimit` in generated cron job specs.",
-          "default": 10,
           "minimum": 1
         },
         "image": {
@@ -88,13 +84,11 @@
         },
         "memoryLimit": {
           "type": "string",
-          "comment": "`resources.limits.memory` in generated container specs.",
-          "default": "1Gi"
+          "comment": "`resources.limits.memory` in generated container specs."
         },
         "memoryRequest": {
           "type": "string",
-          "comment": "`resources.requests.memory` in generated container specs.",
-          "default": "1Gi"
+          "comment": "`resources.requests.memory` in generated container specs."
         },
         "name": {
           "type": "string",
@@ -110,8 +104,7 @@
         },
         "restartPolicy": {
           "type": "string",
-          "comment": "`restartPolicy` in generated pod specs.",
-          "default": "Never"
+          "comment": "`restartPolicy` in generated pod specs."
         },
         "schedule": {
           "type": "string",
@@ -120,7 +113,6 @@
         "successfulJobsHistoryLimit": {
           "type": "integer",
           "comment": "`successfulJobsHistoryLimit` in generated cron job specs.",
-          "default": 1,
           "minimum": 1
         },
         "suspend": {

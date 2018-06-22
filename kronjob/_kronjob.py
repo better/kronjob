@@ -78,7 +78,8 @@ def serialize_k8s(k8s_object):
     )
 
 
-def build_k8s_object(aggregate_job, k8s_api_version=_K8S_API_VERSION, defaults=None):
+def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
+    k8s_api_version = k8s_api_version if k8s_api_version is not None else _K8S_API_VERSION
     version_parts = str(k8s_api_version).split('.')
     k8s_major, k8s_minor = int(version_parts[0]), int(version_parts[1])
     if k8s_major != 1 or k8s_minor < 5:
@@ -159,7 +160,7 @@ def build_k8s_object(aggregate_job, k8s_api_version=_K8S_API_VERSION, defaults=N
     return k8s_object
 
 
-def build_k8s_objects(abstract_jobs, k8s_api_version=_K8S_API_VERSION, defaults=None):
+def build_k8s_objects(abstract_jobs, k8s_api_version=None, defaults=None):
     jsonschema.validate(abstract_jobs, _SCHEMA)
     aggregate_jobs = _build_aggregate_jobs(abstract_jobs)
     for aggregate_job in aggregate_jobs:

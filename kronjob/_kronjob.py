@@ -87,12 +87,12 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
     if k8s_major != 1 or k8s_minor < 5:
         raise ValueError('Unsupported kubernetes api version')
     if k8s_minor >= 8:
-        cronjob_api_version = 'v1beta1'
+        cronjob_api_version = 'batch/v1beta1'
         CronJob = k8s_models.V1beta1CronJob
         CronJobSpec = k8s_models.V1beta1CronJobSpec
         JobTemplateSpec = k8s_models.V1beta1JobTemplateSpec
     else:
-        cronjob_api_version = 'v2alpha1'
+        cronjob_api_version = 'batch/v2alpha1'
         CronJob = k8s_models.V2alpha1CronJob
         CronJobSpec = k8s_models.V2alpha1CronJobSpec
         JobTemplateSpec = k8s_models.V2alpha1JobTemplateSpec

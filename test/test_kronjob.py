@@ -13,7 +13,7 @@ def test_single_cronjob():
     }
     k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
     assert len(k8s_objects) == 1
-    assert isinstance(k8s_objects[0], k8s_models.V2alpha1CronJob)
+    assert isinstance(k8s_objects[0], k8s_models.V1beta1CronJob)
 
 
 def test_single_job():
@@ -50,7 +50,7 @@ def test_multiple():
     k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
     assert len(k8s_objects) == 2
     assert isinstance(k8s_objects[0], k8s_models.V1Job)
-    assert isinstance(k8s_objects[1], k8s_models.V2alpha1CronJob)
+    assert isinstance(k8s_objects[1], k8s_models.V1beta1CronJob)
 
 
 def test_missing_schedule():

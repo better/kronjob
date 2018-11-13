@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='kronjob',
-    version='1.0.1',
+    version='2.0.0',
     description='Generate Kubernetes Job/CronJob specs without the boilerplate.',
     install_requires=[
         'kubernetes==4.0.0',
@@ -11,8 +11,6 @@ setup(
         'crontab==0.22.1',
         'PyYAML==3.12'
     ],
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
     url='https://github.com/better/kronjob',
     author='Better Mortgage',
     author_email='accounts@better.com',

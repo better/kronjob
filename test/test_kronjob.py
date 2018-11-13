@@ -13,7 +13,7 @@ def test_single_cronjob():
     }
     k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
     assert len(k8s_objects) == 1
-    assert isinstance(k8s_objects[0], k8s_models.V2alpha1CronJob)
+    assert isinstance(k8s_objects[0], k8s_models.V1beta1CronJob)
 
 
 def test_single_job():
@@ -50,7 +50,7 @@ def test_multiple():
     k8s_objects = kronjob.build_k8s_objects(abstract_jobs)
     assert len(k8s_objects) == 2
     assert isinstance(k8s_objects[0], k8s_models.V1Job)
-    assert isinstance(k8s_objects[1], k8s_models.V2alpha1CronJob)
+    assert isinstance(k8s_objects[1], k8s_models.V1beta1CronJob)
 
 
 def test_missing_schedule():
@@ -120,6 +120,7 @@ def test_job_properties():
     properties = (
         ('annotations', '["spec"]["template"]["metadata"]["annotations"]', {'test': 'annotation'}),
         ('args', '["spec"]["template"]["spec"]["containers"][0]["args"]', ['some', 'test', 'args']),
+        ('backoffLimit', '["spec"]["backoffLimit"]', 5),
         ('command', '["spec"]["template"]["spec"]["containers"][0]["command"]', ['a', 'test', 'command']),
         ('containerName', '["spec"]["template"]["spec"]["containers"][0]["name"]', 'name'),
         ('cpuLimit', '["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"]["cpu"]', '100m'),

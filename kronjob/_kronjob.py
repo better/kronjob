@@ -19,7 +19,7 @@ __all__ = ['build_k8s_objects', 'main', 'serialize_k8s']
 
 
 _K8S_API_CLIENT = k8s_client.ApiClient()
-_K8S_API_VERSION = '1.7'
+_K8S_API_VERSION = '1.9'
 _REQUIRED_FIELDS = ['name', 'image', 'schedule']
 _SCHEMA = json.loads(pkgutil.get_data('kronjob', 'schema.json').decode('utf-8'))
 
@@ -142,7 +142,8 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
                 ],
                 **_get_args('nodeSelector', 'restartPolicy', 'volumes')
             )
-        )
+        ),
+        backoff_limit=aggregate_job.get('backoffLimit')
     )
     if aggregate_job['schedule'] == 'once':
         k8s_object = k8s_models.V1Job(

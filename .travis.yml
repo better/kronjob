@@ -7,7 +7,7 @@ python:
   - "3.7-dev"
   - "nightly"
 script:
-  - python setup.py test
+  - pip install pytest . && pytest
 matrix:
   allow_failures:
     - python: "3.7-dev"

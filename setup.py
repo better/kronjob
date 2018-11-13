@@ -11,8 +11,6 @@ setup(
         'crontab==0.22.1',
         'PyYAML==3.12'
     ],
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
     url='https://github.com/better/kronjob',
     author='Better Mortgage',
     author_email='accounts@better.com',

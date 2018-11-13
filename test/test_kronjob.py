@@ -120,6 +120,7 @@ def test_job_properties():
     properties = (
         ('annotations', '["spec"]["template"]["metadata"]["annotations"]', {'test': 'annotation'}),
         ('args', '["spec"]["template"]["spec"]["containers"][0]["args"]', ['some', 'test', 'args']),
+        ('backoffLimit', '["spec"]["backoffLimit"]', 5),
         ('command', '["spec"]["template"]["spec"]["containers"][0]["command"]', ['a', 'test', 'command']),
         ('containerName', '["spec"]["template"]["spec"]["containers"][0]["name"]', 'name'),
         ('cpuLimit', '["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"]["cpu"]', '100m'),

@@ -37,6 +37,11 @@
           "type": "array",
           "items": {"type": "string"}
         },
+        "backoffLimit": {
+          "$comment": "`args` in generated job specs.",
+          "type": "integer",
+          "minimum": 1
+        },
         "concurrencyPolicy": {
           "$comment": "`concurrencyPolicy` in generated cron job specs.",
           "type": "string"

@@ -143,7 +143,7 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
                 **_get_args('nodeSelector', 'restartPolicy', 'volumes')
             )
         ),
-        backoff_limit=aggregate_job.get('backoffLimit')
+        backoff_limit=_get_arg('backoffLimit')
     )
     if aggregate_job['schedule'] == 'once':
         k8s_object = k8s_models.V1Job(

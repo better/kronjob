@@ -5,7 +5,7 @@ setup(
     version='2.0.1',
     description='Generate Kubernetes Job/CronJob specs without the boilerplate.',
     install_requires=[
-        'kubernetes==4.0.0',
+        'kubernetes==10.0.1',
         'inflection==0.3.1',
         'jsonschema==2.6.0',
         'crontab==0.22.1',

@@ -5,10 +5,10 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
+  - "3.8"
   - "nightly"
 script:
   - pip install pytest . && pytest
 matrix:
   allow_failures:
-    - python: "3.7"
     - python: "nightly"

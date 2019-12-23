@@ -124,8 +124,17 @@
           "type": "boolean"
         },
         "volumes": {
-          "$comment": "`volumes` in generated pod specs.",
+          "$comment": "`volumes` in generated pod specs. Declares what volumes are available for mounting on specs",
           "type": "array"
+        },
+        "volumeMounts": {
+          "$comment": "`volumeMounts` in generated pod specs. Sets where volumes get mounted as inside container",
+          "type": "array"
+        },
+        "startingDeadlineSeconds": {
+          "$comment": "Deadline in seconds for starting the job if it misses its scheduled time",
+          "type": "integer",
+          "minimum": 1
         }
       }
     },

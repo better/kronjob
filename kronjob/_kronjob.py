@@ -1,3 +1,15 @@
+'''
+This module contains all logic to map our custom kronjob definitions to a
+cronjob/job model in kubernetes. schema.json is the starting point for
+the arguments we accept, and references to the k8s_models is where the
+values are mapped.
+
+For reference for what is available for mapping from schema.json, see:
+
+https://github.com/kubernetes-client/python/blob/master/kubernetes/README.md
+'''
+
+
 from __future__ import print_function
 
 import argparse
@@ -15,7 +27,7 @@ from kubernetes import client as k8s_client
 import yaml
 
 
-__all__ = ['build_k8s_objects', 'main', 'serialize_k8s']
+__all__ = ['build_k8s_objects', 'print_cronjobs', 'serialize_k8s']
 
 
 _K8S_API_CLIENT = k8s_client.ApiClient()
@@ -48,8 +60,9 @@ def _cron_is_valid(cron_schedule):
     try:
         crontab.CronTab(cron_schedule)
         return True
-    except:
+    except Exception:
         return False
+
 
 def _validate_aggregate_job(job):
     if not set(job).issuperset(_REQUIRED_FIELDS):
@@ -81,11 +94,13 @@ def serialize_k8s(k8s_object):
 
 
 def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
-    k8s_api_version = k8s_api_version if k8s_api_version is not None else _K8S_API_VERSION
+    k8s_api_version = k8s_api_version or _K8S_API_VERSION
     version_parts = str(k8s_api_version).split('.')
     k8s_major, k8s_minor = int(version_parts[0]), int(version_parts[1])
+
     if k8s_major != 1 or k8s_minor < 5:
         raise ValueError('Unsupported kubernetes api version')
+
     if k8s_minor >= 8:
         cronjob_api_version = 'batch/v1beta1'
         CronJob = k8s_models.V1beta1CronJob
@@ -108,11 +123,16 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
     def _get_arg(key):
         return aggregate_job.get(key, defaults.get(key))
 
-    def _get_args(*keys):
-        return {
-            inflection.underscore(key): _get_arg(key)
-            for key in keys
-        }
+    def _get_args(*keys) -> str:
+        '''
+        Roughly speaking, turns camel case into snake case, e.g.
+        'DeviceType' -> 'device_type'
+
+        but not always, e.g.
+
+        'IOError' -> 'IoError'
+        '''
+        return {inflection.underscore(key): _get_arg(key) for key in keys}
 
     labels = _get_arg('labels')
     labels[_get_arg('labelKey')] = _get_arg('name')
@@ -137,7 +157,7 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
                                 ) if v is not None
                             } or None,
                         ),
-                        **_get_args('args', 'command', 'image', 'imagePullPolicy')
+                        **_get_args('args', 'command', 'image', 'imagePullPolicy', 'volumeMounts')
                     )
                 ],
                 **_get_args('nodeSelector', 'restartPolicy', 'volumes')
@@ -145,7 +165,9 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
         ),
         backoff_limit=_get_arg('backoffLimit')
     )
+
     if aggregate_job['schedule'] == 'once':
+        # https://github.com/kubernetes-client/python/blob/master/kubernetes/docs/V1Job.md
         k8s_object = k8s_models.V1Job(
             api_version='batch/v1',
             kind='Job',
@@ -153,6 +175,10 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
             spec=job_spec
         )
     else:
+        # Note that this can be one of two versions here:
+        # https://github.com/kubernetes-client/python/blob/master/kubernetes/docs/V1beta1CronJob.md
+        # or
+        # https://github.com/kubernetes-client/python/blob/master/kubernetes/docs/V2alpha1CronJob.md
         k8s_object = CronJob(
             api_version=cronjob_api_version,
             kind='CronJob',
@@ -163,7 +189,12 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
                     spec=job_spec
                 ),
                 **_get_args(
-                    'concurrencyPolicy', 'failedJobsHistoryLimit', 'schedule', 'successfulJobsHistoryLimit', 'suspend'
+                    'concurrencyPolicy',
+                    'failedJobsHistoryLimit',
+                    'schedule',
+                    'successfulJobsHistoryLimit',
+                    'suspend',
+                    'startingDeadlineSeconds'
                 )
             )
         )
@@ -172,6 +203,9 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
 
 
 def build_k8s_objects(abstract_jobs, k8s_api_version=None, defaults=None):
+    '''
+    Given kronjobs, returns the compiled job/cronjobs
+    '''
     jsonschema.validate(abstract_jobs, _SCHEMA)
     aggregate_jobs = _build_aggregate_jobs(abstract_jobs)
     for aggregate_job in aggregate_jobs:
@@ -179,7 +213,7 @@ def build_k8s_objects(abstract_jobs, k8s_api_version=None, defaults=None):
     return [build_k8s_object(job, k8s_api_version=k8s_api_version, defaults=defaults) for job in aggregate_jobs]
 
 
-def main():
+def print_cronjobs():
     parser = argparse.ArgumentParser(description='Generate Kubernetes Job/CronJob specs without the boilerplate.')
     parser.add_argument(
         'abstract_job_spec',
@@ -216,4 +250,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    print_cronjobs()

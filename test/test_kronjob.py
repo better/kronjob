@@ -99,7 +99,6 @@ def test_json_schema_property_validation():
         kronjob.build_k8s_objects(abstract_jobs)
 
 
-
 def test_labels():
     abstract_jobs = {
         'image': 'example.com/base',
@@ -133,6 +132,7 @@ def test_job_properties():
         ('nodeSelector', '["spec"]["template"]["spec"]["nodeSelector"]', {'group': 'jobs'}),
         ('restartPolicy', '["spec"]["template"]["spec"]["restartPolicy"]', 'Never'),
         ('volumes', '["spec"]["template"]["spec"]["volumes"]', [{'name': 'test', 'emptyDir': {}}]),
+        ('volumeMounts', '["spec"]["template"]["spec"]["containers"][0]["volumeMounts"]', [{'name': 'test-volume', 'mountPath': '/opt/mount', 'readOnly': True}])
     )
     for input_path, _, value in properties:
         abstract_jobs[input_path] = value
@@ -153,10 +153,11 @@ def test_cronjob_properties():
         ('schedule', '["spec"]["schedule"]', '* * * * *'),
         ('successfulJobsHistoryLimit', '["spec"]["successfulJobsHistoryLimit"]', 1),
         ('suspend', '["spec"]["suspend"]', True),
+        ('startingDeadlineSeconds', '["spec"]["startingDeadlineSeconds"]', 5000)
     )
     for input_path, _, value in properties:
         abstract_jobs[input_path] = value
     k8s_job = kronjob.build_k8s_objects(abstract_jobs)
-    serialized_job = list(yaml.safe_load_all(kronjob.serialize_k8s(k8s_job)))[0]
+    serialized_job = list(yaml.safe_load_all(kronjob.serialize_k8s(k8s_job)))[0] # noqa
     for _, output_path, value in properties:
         assert eval('serialized_job{}'.format(output_path)) == value

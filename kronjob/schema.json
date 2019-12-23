@@ -124,8 +124,34 @@
           "type": "boolean"
         },
         "volumes": {
-          "$comment": "`volumes` in generated pod specs.",
+          "$comment": "`volumes` in generated pod specs. Declares what volumes are available for mounting on specs",
           "type": "array"
+        },
+        "volumeMounts": {
+          "$comment": "`volumeMounts` in generated pod specs. Sets where volumes get mounted as inside container",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "mountPath": {
+                "$comment": "Where the volume will be mounted in the container",
+                "type": "string"
+              },
+              "name": {
+                "$comment": "Name of the volume to be mounted (declared in volume mounts)",
+                "type": "string"
+              },
+              "readOnly": {
+                "$comment": "Whether the mount path descendents are writeable",
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "startingDeadlineSeconds": {
+          "$comment": "Deadline in seconds for starting the job if it misses its scheduled time",
+          "type": "integer",
+          "minimum": 1
         }
       }
     },

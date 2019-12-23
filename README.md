@@ -180,3 +180,14 @@ spec:
         name: job
       restartPolicy: Never
 ```
+
+## Development
+
+### Adding more kubernetes parameters
+
+In general, to allow `kronjob` to take more parameters, the following must be done:
+
+1.  Add the parameter to `schema.json` so that it is consumed from the `kronjob.yml`
+2.  Find its appropriate mapping in the kubernetes models. This generally involves going through the `github.com/kubernetes-client/python` documentation and trying to find the appropriate model, depending on where the parameter is supposed to be surfaced
+3.  Add the mapping inside the `build_k8s_object` function.
+4.  Update tests to reflect that the kronjob can handle a new parameter, and that it maps appropriately. Note that `kronjob` abstracts both a CronJob and a Job

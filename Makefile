@@ -3,7 +3,7 @@
 test:
 	python3 -m venv --clear venv
 	venv/bin/pip install pytest .
-	venv/bin/pytest
+	venv/bin/pytest -s
 
 build-assets:
 	rm -rf dist/

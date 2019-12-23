@@ -132,7 +132,7 @@ def test_job_properties():
         ('nodeSelector', '["spec"]["template"]["spec"]["nodeSelector"]', {'group': 'jobs'}),
         ('restartPolicy', '["spec"]["template"]["spec"]["restartPolicy"]', 'Never'),
         ('volumes', '["spec"]["template"]["spec"]["volumes"]', [{'name': 'test', 'emptyDir': {}}]),
-        ('volumeMounts', '["spec"]["template"]["spec"]["containers"][0]["volumeMounts"]', [{'name': 'test-volume', 'mouthPath': '/opt/mount', 'readOnly': True}])
+        ('volumeMounts', '["spec"]["template"]["spec"]["containers"][0]["volumeMounts"]', [{'name': 'test-volume', 'mountPath': '/opt/mount', 'readOnly': True}])
     )
     for input_path, _, value in properties:
         abstract_jobs[input_path] = value

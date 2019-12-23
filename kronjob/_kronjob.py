@@ -138,13 +138,18 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
     labels[_get_arg('labelKey')] = _get_arg('name')
     metadata = k8s_models.V1ObjectMeta(labels=labels, **_get_args('name', 'namespace'))
     env = _deserialize_k8s(aggregate_job.get('env'), 'list[V1EnvVar]')
+
+    volume_mounts = _get_arg('volumeMounts') or []
+    volume_mounts = [k8s_models.V1VolumeMount(**({inflection.underscore(k): v for k, v in volume_mount.items()})) for volume_mount in volume_mounts]
+
     job_spec = k8s_models.V1JobSpec(
         template=k8s_models.V1PodTemplateSpec(
             metadata=k8s_models.V1ObjectMeta(labels=labels, **_get_args('annotations')),
             spec=k8s_models.V1PodSpec(
                 containers=[
                     k8s_models.V1Container(
-                        env=env, name=_get_arg('containerName'),
+                        env=env,
+                        name=_get_arg('containerName'),
                         resources=k8s_models.V1ResourceRequirements(
                             limits={
                                 k: v for k, v in (
@@ -157,7 +162,8 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
                                 ) if v is not None
                             } or None,
                         ),
-                        **_get_args('args', 'command', 'image', 'imagePullPolicy', 'volumeMounts')
+                        volume_mounts=volume_mounts,
+                        **_get_args('args', 'command', 'image', 'imagePullPolicy')
                     )
                 ],
                 **_get_args('nodeSelector', 'restartPolicy', 'volumes')

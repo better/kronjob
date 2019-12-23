@@ -27,7 +27,7 @@ from kubernetes import client as k8s_client
 import yaml
 
 
-__all__ = ['build_k8s_objects', 'print_cronjobs', 'serialize_k8s']
+__all__ = ['build_k8s_objects', 'main', 'serialize_k8s']
 
 
 _K8S_API_CLIENT = k8s_client.ApiClient()
@@ -123,7 +123,7 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
     def _get_arg(key):
         return aggregate_job.get(key, defaults.get(key))
 
-    def _get_args(*keys) -> str:
+    def _get_args(*keys):
         '''
         Roughly speaking, turns camel case into snake case, e.g.
         'DeviceType' -> 'device_type'
@@ -213,7 +213,7 @@ def build_k8s_objects(abstract_jobs, k8s_api_version=None, defaults=None):
     return [build_k8s_object(job, k8s_api_version=k8s_api_version, defaults=defaults) for job in aggregate_jobs]
 
 
-def print_cronjobs():
+def main():
     parser = argparse.ArgumentParser(description='Generate Kubernetes Job/CronJob specs without the boilerplate.')
     parser.add_argument(
         'abstract_job_spec',
@@ -250,4 +250,4 @@ def print_cronjobs():
 
 
 if __name__ == '__main__':
-    print_cronjobs()
+    main()

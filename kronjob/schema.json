@@ -40,7 +40,7 @@
         "backoffLimit": {
           "$comment": "`args` in generated job specs.",
           "type": "integer",
-          "minimum": 1
+          "minimum": 0
         },
         "concurrencyPolicy": {
           "$comment": "`concurrencyPolicy` in generated cron job specs.",

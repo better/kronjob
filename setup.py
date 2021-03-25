@@ -9,7 +9,7 @@ setup(
         'inflection==0.3.1',
         'jsonschema==2.6.0',
         'crontab==0.22.1',
-        'PyYAML==5.1'
+        'PyYAML==5.4'
     ],
     url='https://github.com/better/kronjob',
     author='Better Mortgage',

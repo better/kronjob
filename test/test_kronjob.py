@@ -108,7 +108,35 @@ def test_labels():
         'labels': {'another': 'label'}
     }
     job = kronjob.build_k8s_objects(abstract_jobs)[0]
-    assert job.metadata.labels == {'another': 'label', 'testKey': 'test'}
+    assert job.metadata.labels == {
+        'another': 'label', 'testKey': 'test',
+        'app.kubernetes.io/name': 'test',
+        'app.kubernetes.io/environment': 'default',
+        'app.kubernetes.io/component': 'job'
+    }
+
+
+def test_label_overrides():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'schedule': 'once',
+        'name': 'test',
+        'namespace': 'test_ns',
+        'labelKey': 'testKey',
+        'labels': {
+            'another': 'label',
+            'app.kubernetes.io/name': 'test_name',
+            'app.kubernetes.io/environment': 'test_env',
+            'app.kubernetes.io/component': 'test_component'
+        }
+    }
+    job = kronjob.build_k8s_objects(abstract_jobs)[0]
+    assert job.metadata.labels == {
+        'another': 'label', 'testKey': 'test',
+        'app.kubernetes.io/name': 'test_name',
+        'app.kubernetes.io/environment': 'test_env',
+        'app.kubernetes.io/component': 'test_component'
+    }
 
 
 def test_job_properties():
@@ -158,6 +186,6 @@ def test_cronjob_properties():
     for input_path, _, value in properties:
         abstract_jobs[input_path] = value
     k8s_job = kronjob.build_k8s_objects(abstract_jobs)
-    serialized_job = list(yaml.safe_load_all(kronjob.serialize_k8s(k8s_job)))[0] # noqa
+    serialized_job = list(yaml.safe_load_all(kronjob.serialize_k8s(k8s_job)))[0]  # noqa
     for _, output_path, value in properties:
         assert eval('serialized_job{}'.format(output_path)) == value

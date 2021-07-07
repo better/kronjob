@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='kronjob',
-    version='2.0.4',
+    version='2.1.0',
     description='Generate Kubernetes Job/CronJob specs without the boilerplate.',
     install_requires=[
         'kubernetes==10.0.1',

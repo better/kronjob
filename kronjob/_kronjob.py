@@ -119,6 +119,8 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
         defaults['labels'] = {}
     if 'labelKey' not in defaults:
         defaults['labelKey'] = 'kronjob/job'
+    if 'namespace' not in defaults:
+        defaults['namespace'] = 'default'
 
     def _get_arg(key):
         return aggregate_job.get(key, defaults.get(key))
@@ -134,10 +136,19 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
         '''
         return {inflection.underscore(key): _get_arg(key) for key in keys}
 
+    name = _get_arg('name')
     labels = _get_arg('labels')
-    labels[_get_arg('labelKey')] = _get_arg('name')
+    labels[_get_arg('labelKey')] = name
     metadata = k8s_models.V1ObjectMeta(labels=labels, **_get_args('name', 'namespace'))
     env = _deserialize_k8s(aggregate_job.get('env'), 'list[V1EnvVar]')
+
+    def _set_label_default(label, default):
+        if label not in labels:
+            labels[label] = default
+
+    _set_label_default('app.kubernetes.io/name', name)
+    _set_label_default('app.kubernetes.io/environment', _get_arg('namespace'))
+    _set_label_default('app.kubernetes.io/component', 'job')
 
     volume_mounts = _get_arg('volumeMounts') or []
     volume_mounts = [k8s_models.V1VolumeMount(**({inflection.underscore(k): v for k, v in volume_mount.items()})) for volume_mount in volume_mounts]

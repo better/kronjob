@@ -93,7 +93,7 @@ def serialize_k8s(k8s_object):
     )
 
 
-def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
+def build_k8s_object(aggregate_job, k8s_api_version=None, disable_cronjobs=False, defaults=None):
     k8s_api_version = k8s_api_version or _K8S_API_VERSION
     version_parts = str(k8s_api_version).split('.')
     k8s_major, k8s_minor = int(version_parts[0]), int(version_parts[1])
@@ -192,34 +192,37 @@ def build_k8s_object(aggregate_job, k8s_api_version=None, defaults=None):
             spec=job_spec
         )
     else:
-        # Note that this can be one of two versions here:
-        # https://github.com/kubernetes-client/python/blob/master/kubernetes/docs/V1beta1CronJob.md
-        # or
-        # https://github.com/kubernetes-client/python/blob/master/kubernetes/docs/V2alpha1CronJob.md
-        k8s_object = CronJob(
-            api_version=cronjob_api_version,
-            kind='CronJob',
-            metadata=metadata,
-            spec=CronJobSpec(
-                job_template=JobTemplateSpec(
-                    metadata=k8s_models.V1ObjectMeta(labels=labels),
-                    spec=job_spec
-                ),
-                **_get_args(
-                    'concurrencyPolicy',
-                    'failedJobsHistoryLimit',
-                    'schedule',
-                    'successfulJobsHistoryLimit',
-                    'suspend',
-                    'startingDeadlineSeconds'
+        if disable_cronjobs:
+            raise Exception('Cronjob templating has been disabled. Use helm charts instead!')
+        else:
+            # Note that this can be one of two versions here:
+            # https://github.com/kubernetes-client/python/blob/master/kubernetes/docs/V1beta1CronJob.md
+            # or
+            # https://github.com/kubernetes-client/python/blob/master/kubernetes/docs/V2alpha1CronJob.md
+            k8s_object = CronJob(
+                api_version=cronjob_api_version,
+                kind='CronJob',
+                metadata=metadata,
+                spec=CronJobSpec(
+                    job_template=JobTemplateSpec(
+                        metadata=k8s_models.V1ObjectMeta(labels=labels),
+                        spec=job_spec
+                    ),
+                    **_get_args(
+                        'concurrencyPolicy',
+                        'failedJobsHistoryLimit',
+                        'schedule',
+                        'successfulJobsHistoryLimit',
+                        'suspend',
+                        'startingDeadlineSeconds'
+                    )
                 )
             )
-        )
 
     return k8s_object
 
 
-def build_k8s_objects(abstract_jobs, k8s_api_version=None, defaults=None):
+def build_k8s_objects(abstract_jobs, k8s_api_version=None, disable_cronjobs=False, defaults=None):
     '''
     Given kronjobs, returns the compiled job/cronjobs
     '''
@@ -227,7 +230,7 @@ def build_k8s_objects(abstract_jobs, k8s_api_version=None, defaults=None):
     aggregate_jobs = _build_aggregate_jobs(abstract_jobs)
     for aggregate_job in aggregate_jobs:
         _validate_aggregate_job(aggregate_job)
-    return [build_k8s_object(job, k8s_api_version=k8s_api_version, defaults=defaults) for job in aggregate_jobs]
+    return [build_k8s_object(job, k8s_api_version=k8s_api_version, disable_cronjobs=disable_cronjobs, defaults=defaults) for job in aggregate_jobs]
 
 
 def main():
@@ -253,6 +256,7 @@ def main():
     )
     parser.add_argument('--k8s-api-version', default=_K8S_API_VERSION)
     parser.add_argument('--version', action='store_true')
+    parser.add_argument('--disable-cronjobs', action='store_true')
     args = parser.parse_args()
 
     if args.version:
@@ -262,7 +266,7 @@ def main():
 
     abstract_jobs = yaml.safe_load(args.abstract_job_spec)
     defaults = yaml.safe_load(args.defaults_file) if args.defaults_file is not None else None
-    k8s_objects = build_k8s_objects(abstract_jobs, k8s_api_version=args.k8s_api_version, defaults=defaults)
+    k8s_objects = build_k8s_objects(abstract_jobs, k8s_api_version=args.k8s_api_version, disable_cronjobs=args.disable_cronjobs, defaults=defaults)
     print(serialize_k8s(k8s_objects), file=args.k8s_job_spec)
 
 

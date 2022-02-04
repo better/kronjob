@@ -189,3 +189,13 @@ def test_cronjob_properties():
     serialized_job = list(yaml.safe_load_all(kronjob.serialize_k8s(k8s_job)))[0]  # noqa
     for _, output_path, value in properties:
         assert eval('serialized_job{}'.format(output_path)) == value
+
+
+def test_cronjob_disabled():
+    abstract_jobs = {
+        'image': 'example.com/base',
+        'schedule': '* * * * *',
+        'jobs': [{'name': 'test'}]
+    }
+    with pytest.raises(Exception):
+        kronjob.build_k8s_objects(abstract_jobs, disable_cronjobs=True)
